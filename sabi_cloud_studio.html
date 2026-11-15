@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="sq" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SABI // CLOUD ENGINE & VIP AI STUDIO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background-color: #030712; color: #f8fafc; overflow-x: hidden; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glass { background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(18px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .glow-border:focus-within { border-color: #6366f1; box-shadow: 0 0 25px rgba(99, 102, 241, 0.25); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #030712; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
+        .live-dot { animation: pulse-dot 2s infinite; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="glass sticky top-0 z-50 px-4 md:px-8 py-3.5 flex items-center justify-between border-b border-slate-800/80">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-500 flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/30">
+                S
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-lg tracking-tight">SABI <span class="text-indigo-400">CLOUD</span></span>
+                    <span class="text-[10px] mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 live-dot"></span> AUTO-DB LIVE
+                    </span>
+                </div>
+                <p class="text-[11px] text-slate-400 mono" id="ipStatusText">IP: Duke skanuar rrjetin...</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap justify-end">
+            <!-- Cloud Sync Indicator -->
+            <div class="hidden sm:flex items-center gap-2 bg-slate-900/90 border border-slate-800 px-3 py-1.5 rounded-xl text-xs mono text-slate-300" title="ID e Databazës Online">
+                <span class="text-cyan-400">DB:</span>
+                <span id="cloudVaultBadge" class="text-slate-200 font-semibold">Duke lidhur...</span>
+                <button onclick="openVaultModal()" class="text-indigo-400 hover:text-indigo-300 underline ml-1">Ndrysho</button>
+            </div>
+
+            <!-- User Credits Pill -->
+            <div class="bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+                <span class="text-xs text-slate-400">Kredite:</span>
+                <span id="creditDisplay" class="mono font-bold text-sm text-amber-400">20</span>
+            </div>
+
+            <!-- Admin Button (Hidden unless admin) -->
+            <button id="adminPanelBtn" onclick="openAdminModal()" class="hidden bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/40 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5">
+                👑 Admin Panel
+            </button>
+
+            <!-- Auth Button -->
+            <button id="authBtn" onclick="openAuthModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/25">
+                Hyr / Regjistrohu
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0">
+        
+        <!-- LEFT PANEL: AI STUDIO CHAT & PROMPT ENGINE -->
+        <section class="lg:col-span-5 xl:col-span-4 border-r border-slate-800/80 flex flex-col h-[calc(100vh-69px)] bg-slate-950/60">
+            
+            <!-- Model & Mode Bar -->
+            <div class="p-3 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/40">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-400">Modeli:</span>
+                    <select id="aiModelSelect" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="openai">Sabi VIP Ultra (GPT-4o Live)</option>
+                        <option value="mistral">Sabi Coder Pro (Full-Stack)</option>
+                        <option value="llama">Sabi Fast Engine (Instant)</option>
+                    </select>
+                </div>
+                <button onclick="resetProject()" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded hover:bg-slate-800 transition">
+                    + Projekt i ri
+                </button>
+            </div>
+
+            <!-- Chat History -->
+            <div id="chatStream" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="glass rounded-2xl p-4 border-l-4 border-indigo-500">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs font-bold text-indigo-400 mono">SABI_AI_CORE // ONLINE</span>
+                        <span class="text-[10px] text-slate-500 mono">242 Modele Aktive</span>
+                    </div>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        Mirësevini në <strong>Sabi Cloud Studio</strong>! Databaza juaj është lidhur automatikisht online. Përshkruani çdo webfaqe, dyqan, sistem rezervimi ose lojë dhe unë do ta shkruaj kodin e plotë dhe do ta shfaq menjëherë djathtas.
+                    </p>
+                    <div class="mt-3 flex flex-wrap gap-1.5">
+                        <button onclick="quickPrompt('Ndërto një webfaqe moderne për një restorant luksoz me menu, çmime dhe formular rezervimi')" class="text-[11px] bg-slate-800/90 hover:bg-indigo-600/30 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-300 transition">🍽️ Restorant</button>
+                        <button onclick="quickPrompt('Ndërto një dyqan online për telefona dhe teknologji me shportë blerjeje dhe llogaritje të totalit')" class="text-[11px] bg-slate-800/90 hover:bg-indigo-600/30 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-300 transition">🛒 Dyqan Online</button>
+                        <button onclick="quickPrompt('Krijo një panel analitik kripto dhe bursash me grafikë dhe çmime live')" class="text-[11px] bg-slate-800/90 hover:bg-indigo-600/30 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-300 transition">📈 Kripto Panel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prompt Input Area -->
+            <div class="p-3.5 border-t border-slate-800/80 bg-slate-900/50">
+                <div class="glass glow-border rounded-2xl p-2 transition">
+                    <textarea id="promptInput" rows="3" placeholder="Shkruaj këtu çfarë dëshiron të ndërtosh ose çfarë ndryshimi dëshiron të bësh..." 
+                        class="w-full bg-transparent text-sm text-white placeholder-slate-500 px-2 py-1 focus:outline-none resize-none"
+                        onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); generateApp();}"></textarea>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 px-1">
+                        <span class="text-[11px] text-slate-400 mono" id="userBadge">Vizitor (20 kredite)</span>
+                        <button id="sendBtn" onclick="generateApp()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/30">
+                            <span>⚡ Ndërto Live</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT PANEL: LIVE PREVIEW & SOURCE CODE -->
+        <section class="lg:col-span-7 xl:col-span-8 flex flex-col h-[calc(100vh-69px)] bg-[#070b14]">
+            
+            <!-- Preview Toolbar -->
+            <div class="px-4 py-2.5 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60 flex-wrap gap-2">
+                <div class="flex items-center gap-2">
+                    <div class="flex gap-1.5 mr-2">
+                        <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-lg p-0.5 flex text-xs">
+                        <button id="tabPreview" onclick="switchTab('preview')" class="px-3 py-1 rounded-md bg-indigo-600 text-white font-medium transition">👁️ Pamja Live</button>
+                        <button id="tabCode" onclick="switchTab('code')" class="px-3 py-1 rounded-md text-slate-400 hover:text-white transition">💻 Kodi HTML</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span id="buildStatus" class="text-xs mono text-emerald-400 hidden">● Gati</span>
+                    <button onclick="copyGeneratedCode()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700 transition">
+                        📋 Kopjo Kodin
+                    </button>
+                    <button onclick="downloadGeneratedSite()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold transition shadow-lg shadow-emerald-600/20">
+                        ⬇️ Shkarko .HTML
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Iframe / Code Box -->
+            <div class="flex-1 relative overflow-hidden">
+                <iframe id="liveFrame" class="w-full h-full bg-white border-0"></iframe>
+                <pre id="codeViewer" class="hidden w-full h-full overflow-auto p-5 text-xs mono text-cyan-300 bg-[#04070d] leading-relaxed select-all"></pre>
+                
+                <!-- Loading Overlay -->
+                <div id="loadingOverlay" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-md flex flex-col items-center justify-center z-20">
+                    <div class="w-14 h-14 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin mb-4"></div>
+                    <p class="text-base font-bold text-white tracking-wide">AI po shkruan kodin e aplikacionit...</p>
+                    <p class="text-xs text-indigo-300 mono mt-1" id="loadingStep">Duke gjeneruar HTML, CSS & JavaScript...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- AUTH MODAL (1 IP = 1 REGISTRATION) -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass max-w-md w-full rounded-2xl p-6 border border-slate-700 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-white">Hyrje & Regjistrim VIP</h3>
+                <button onclick="closeModal('authModal')" class="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+
+            <div class="flex bg-slate-900 p-1 rounded-xl mb-5 border border-slate-800">
+                <button id="modeLoginBtn" onclick="setAuthMode('login')" class="flex-1 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white">Hyr në Llogari</button>
+                <button id="modeRegBtn" onclick="setAuthMode('register')" class="flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400">Regjistrohu (1 herë / IP)</button>
+            </div>
+
+            <div class="space-y-3.5">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Emri i Përdoruesit ose Email (p.sh. sabi)</label>
+                    <input id="authUsername" type="text" placeholder="Shkruaj emrin..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Fjalëkalimi</label>
+                    <input id="authPassword" type="password" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 text-[11px] mono text-slate-400 flex justify-between">
+                    <span>IP e Zbuluar:</span>
+                    <span id="modalIpDisplay" class="text-cyan-400 font-bold">Duke lexuar...</span>
+                </div>
+                <p id="authError" class="hidden text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 p-2.5 rounded-xl"></p>
+                <button onclick="submitAuth()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30">
+                    Vazhdo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PANEL MODAL -->
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass max-w-4xl w-full rounded-2xl p-6 border border-amber-500/30 shadow-2xl max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center pb-4 border-b border-slate-800">
+                <div>
+                    <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2">👑 Paneli i Administratorit (Sabi Master)</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Kredite: <span class="text-emerald-400 font-bold">∞ PA LIMIT</span> | Databaza Online: <span id="adminVaultId" class="mono text-cyan-400"></span></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="syncCloudDatabase(true)" class="bg-cyan-600/20 hover:bg-cyan-600/30 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl text-xs font-semibold">
+                        🔄 Rifresko Cloud
+                    </button>
+                    <button onclick="closeModal('adminModal')" class="text-slate-400 hover:text-white text-2xl px-2">&times;</button>
+                </div>
+            </div>
+
+            <!-- Create Client Manually -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 my-4 bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+                <input id="newClientUser" type="text" placeholder="Emri i klientit (p.sh. sabi)" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                <input id="newClientPass" type="text" placeholder="Fjalëkalimi" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                <input id="newClientCredits" type="number" value="20" placeholder="Kredite" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white">
+                <button onclick="adminCreateClient()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg px-3 py-2 text-xs transition">
+                    + Shto Klient
+                </button>
+            </div>
+
+            <!-- Users Table -->
+            <div class="flex-1 overflow-y-auto border border-slate-800 rounded-xl">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead class="bg-slate-900 text-slate-400 mono uppercase">
+                        <tr>
+                            <th class="p-3">Klienti</th>
+                            <th class="p-3">Fjalëkalimi</th>
+                            <th class="p-3">Adresa IP</th>
+                            <th class="p-3">Kredite</th>
+                            <th class="p-3 text-right">Dërgo Kredite & Kontroll IP</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUsersTable" class="divide-y divide-slate-800/80 bg-slate-950/60"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLOUD VAULT ID MODAL (AUTO-SYNC ACROSS DEVICES) -->
+    <div id="vaultModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="glass max-w-md w-full rounded-2xl p-6 border border-slate-700">
+            <h3 class="text-lg font-bold text-white mb-2">🌐 Lidhja e Databazës Online (Cloud Sync)</h3>
+            <p class="text-xs text-slate-300 leading-relaxed mb-4">
+                Ky aplikacion lidhet <strong>automatikisht</strong> me një databazë online falas. Nëse dëshironi që telefoni juaj dhe pajisjet e klientëve të ndajnë të njëjtën databazë (që kur ju shtoni <strong>+20, +50, +100</strong> kredite nga telefoni t'i shfaqen klientit direkt), vendosni të njëjtin <strong>Kod Databaze (Vault ID)</strong> në të dyja pajisjet:
+            </p>
+            <input id="vaultIdInput" type="text" class="w-full bg-slate-900 border border-cyan-500/50 rounded-xl px-3.5 py-2.5 text-sm mono text-cyan-300 mb-4 focus:outline-none">
+            <div class="flex justify-end gap-2">
+                <button onclick="closeModal('vaultModal')" class="px-4 py-2 rounded-xl text-xs text-slate-400 hover:text-white">Mbyll</button>
+                <button onclick="saveVaultId()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-4 py-2 rounded-xl text-xs">Ruaj & Sinkronizo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. AUTOMATIC ONLINE DATABASE & REAL-TIME AI ENGINE
+        // =========================================================================
+        const DEFAULT_VAULT_ID = "sabi_vip_cloud_db_2026_master";
+        let VAULT_ID = localStorage.getItem("sabi_vault_id") || DEFAULT_VAULT_ID;
+        const CLOUD_ENDPOINT = "https://kvdb.io/A9xK7mP2qR8vL4nW9zB3tY/" + encodeURIComponent(VAULT_ID);
+
+        const ADMIN_USER = "admin@sabi";
+        const ADMIN_PASS = "sabi007";
+
+        let state = {
+            users: {},
+            blockedIps: {},
+            currentUser: null,
+            guestCredits: parseInt(localStorage.getItem("sabi_guest_credits") || "20"),
+            clientIp: "Duke u zbuluar...",
+            authMode: "login",
+            conversationHistory: [],
+            currentGeneratedHTML: ""
+        };
+
+        // Initial Starter Template
+        const STARTER_HTML = `<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { margin:0; font-family: system-ui, sans-serif; background: linear-gradient(135deg, #0f172a, #1e1b4b); color: white; display:flex; align-items:center; justify-content:center; height:100vh; text-align:center; }
+  .box { max-width: 520px; padding: 40px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; backdrop-filter: blur(10px); }
+  h1 { font-size: 2.2rem; margin-bottom: 12px; background: linear-gradient(to right, #818cf8, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  p { color: #94a3b8; line-height: 1.6; }
+</style>
+</head>
+<body>
+  <div class="box">
+    <h1>Sabi AI Studio Live</h1>
+    <p>Shkruani në panelin majtas çfarë aplikacioni, webfaqeje ose sistemi dëshironi të ndërtoni. AI do ta krijojë kodin në kohë reale dhe do ta shfaqë këtu.</p>
+  </div>
+</body>
+</html>`;
+
+        // =========================================================================
+        // 2. INITIALIZATION & IP DETECTION
+        // =========================================================================
+        window.addEventListener("DOMContentLoaded", async () => {
+            document.getElementById("cloudVaultBadge").innerText = VAULT_ID;
+            renderGeneratedCode(STARTER_HTML);
+            
+            await detectClientIP();
+            await syncCloudDatabase(false);
+            
+            // Restore logged-in session
+            const savedSession = localStorage.getItem("sabi_logged_user");
+            if (savedSession) {
+                if (savedSession === ADMIN_USER) {
+                    state.currentUser = { username: ADMIN_USER, isAdmin: true };
+                } else if (state.users[savedSession]) {
+                    state.currentUser = state.users[savedSession];
+                }
+            }
+            updateUI();
+
+            // Auto-sync database every 8 seconds so admin +20/+50/+100 updates appear live on client
+            setInterval(() => syncCloudDatabase(false), 8000);
+        });
+
+        async function detectClientIP() {
+            try {
+                const res = await fetch("https://api.ipify.org?format=json");
+                const data = await res.json();
+                state.clientIp = data.ip || getDeviceFingerprint();
+            } catch (e) {
+                state.clientIp = getDeviceFingerprint();
+            }
+            document.getElementById("ipStatusText").innerText = `IP: ${state.clientIp} [Mbrojtur]`;
+            document.getElementById("modalIpDisplay").innerText = state.clientIp;
+        }
+
+        function getDeviceFingerprint() {
+            let fp = localStorage.getItem("sabi_device_fp");
+            if (!fp) {
+                fp = "DEV-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+                localStorage.setItem("sabi_device_fp", fp);
+            }
+            return fp;
+        }
+
+        // =========================================================================
+        // 3. AUTOMATIC CLOUD DATABASE SYNC (READ & WRITE)
+        // =========================================================================
+        async function syncCloudDatabase(showAlert = false) {
+            try {
+                const res = await fetch(CLOUD_ENDPOINT, { cache: "no-store" });
+                if (res.ok) {
+                    const cloudData = await res.json();
+                    if (cloudData && typeof cloudData === "object") {
+                        state.users = cloudData.users || {};
+                        state.blockedIps = cloudData.blockedIps || {};
+                        localStorage.setItem("sabi_local_db_backup", JSON.stringify(cloudData));
+                    }
+                }
+            } catch (err) {
+                const backup = localStorage.getItem("sabi_local_db_backup");
+                if (backup) {
+                    const parsed = JSON.parse(backup);
+                    state.users = parsed.users || {};
+                    state.blockedIps = parsed.blockedIps || {};
+                }
+            }
+
+            if (state.currentUser && !state.currentUser.isAdmin && state.users[state.currentUser.username]) {
+                state.currentUser = state.users[state.currentUser.username];
+            }
+            updateUI();
+            if (!document.getElementById("adminModal").classList.contains("hidden")) {
+                renderAdminTable();
+            }
+            if (showAlert) alert("Databaza Cloud u sinkronizua me sukses!");
+        }
+
+        async function pushCloudDatabase() {
+            const payload = {
+                users: state.users,
+                blockedIps: state.blockedIps,
+                updatedAt: new Date().toISOString()
+            };
+            localStorage.setItem("sabi_local_db_backup", JSON.stringify(payload));
+            try {
+                await fetch(CLOUD_ENDPOINT, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+            } catch (e) {
+                console.warn("Ruajtje lokale aktive.");
+            }
+        }
+
+        // =========================================================================
+        // 4. AUTHENTICATION (1 IP = 1 ACCOUNT) & ADMIN CREDITS
+        // =========================================================================
+        function setAuthMode(mode) {
+            state.authMode = mode;
+            document.getElementById("authError").classList.add("hidden");
+            document.getElementById("modeLoginBtn").className = mode === "login"
+                ? "flex-1 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white"
+                : "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400";
+            document.getElementById("modeRegBtn").className = mode === "register"
+                ? "flex-1 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white"
+                : "flex-1 py-1.5 text-xs font-bold rounded-lg text-slate-400";
+        }
+
+        async function submitAuth() {
+            const username = document.getElementById("authUsername").value.trim().toLowerCase();
+            const password = document.getElementById("authPassword").value.trim();
+            const errBox = document.getElementById("authError");
+            errBox.classList.add("hidden");
+
+            if (!username || !password) {
+                showAuthError("Ju lutem plotësoni emrin dhe fjalëkalimin.");
+                return;
+            }
+
+            // Admin Login Check
+            if (username === ADMIN_USER && password === ADMIN_PASS) {
+                state.currentUser = { username: ADMIN_USER, isAdmin: true };
+                localStorage.setItem("sabi_logged_user", ADMIN_USER);
+                closeModal("authModal");
+                updateUI();
+                return;
+            }
+
+            await syncCloudDatabase(false);
+
+            if (state.authMode === "login") {
+                const user = state.users[username];
+                if (!user || user.password !== password) {
+                    showAuthError("Emri i përdoruesit ose fjalëkalimi është i gabuar.");
+                    return;
+                }
+                state.currentUser = user;
+                localStorage.setItem("sabi_logged_user", username);
+                closeModal("authModal");
+                updateUI();
+            } else {
+                // Registration: Check 1 IP = 1 Account
+                if (state.blockedIps[state.clientIp]) {
+                    const existingUser = state.blockedIps[state.clientIp];
+                    showAuthError(`Kjo IP (${state.clientIp}) është regjistruar një herë me llogarinë "${existingUser}". Nuk lejohet regjistrimi i dytë.`);
+                    return;
+                }
+                if (state.users[username] || username === ADMIN_USER) {
+                    showAuthError("Ky emër përdoruesi ekziston. Zgjidhni një emër tjetër.");
+                    return;
+                }
+
+                const newUser = {
+                    username: username,
+                    password: password,
+                    ip: state.clientIp,
+                    credits: 20,
+                    createdAt: new Date().toLocaleDateString("sq-AL")
+                };
+
+                state.users[username] = newUser;
+                state.blockedIps[state.clientIp] = username;
+                state.currentUser = newUser;
+                localStorage.setItem("sabi_logged_user", username);
+
+                await pushCloudDatabase();
+                closeModal("authModal");
+                updateUI();
+            }
+        }
+
+        function showAuthError(msg) {
+            const errBox = document.getElementById("authError");
+            errBox.innerText = msg;
+            errBox.classList.remove("hidden");
+        }
+
+        function logoutUser() {
+            state.currentUser = null;
+            localStorage.removeItem("sabi_logged_user");
+            updateUI();
+        }
+
+        function updateUI() {
+            const creditEl = document.getElementById("creditDisplay");
+            const authBtn = document.getElementById("authBtn");
+            const adminBtn = document.getElementById("adminPanelBtn");
+            const userBadge = document.getElementById("userBadge");
+
+            if (state.currentUser && state.currentUser.isAdmin) {
+                creditEl.innerText = "∞ PA LIMIT";
+                creditEl.className = "mono font-bold text-sm text-emerald-400";
+                adminBtn.classList.remove("hidden");
+                authBtn.innerText = "Dil (Admin)";
+                authBtn.onclick = logoutUser;
+                userBadge.innerText = "👑 Admin: admin@sabi (∞)";
+            } else if (state.currentUser) {
+                const creds = state.currentUser.credits;
+                creditEl.innerText = creds;
+                creditEl.className = creds > 0 ? "mono font-bold text-sm text-amber-400" : "mono font-bold text-sm text-rose-500";
+                adminBtn.classList.add("hidden");
+                authBtn.innerText = `Dil (${state.currentUser.username})`;
+                authBtn.onclick = logoutUser;
+                userBadge.innerText = `Klient: ${state.currentUser.username} (${creds} kredite)`;
+            } else {
+                creditEl.innerText = state.guestCredits;
+                creditEl.className = state.guestCredits > 0 ? "mono font-bold text-sm text-amber-400" : "mono font-bold text-sm text-rose-500";
+                adminBtn.classList.add("hidden");
+                authBtn.innerText = "Hyr / Regjistrohu";
+                authBtn.onclick = openAuthModal;
+                userBadge.innerText = `Vizitor (${state.guestCredits} kredite)`;
+            }
+        }
+
+        // =========================================================================
+        // 5. ADMIN CONTROLS (+20, +50, +100 CREDITS & IP UNLOCK)
+        // =========================================================================
+        function openAdminModal() {
+            document.getElementById("adminVaultId").innerText = VAULT_ID;
+            renderAdminTable();
+            document.getElementById("adminModal").classList.remove("hidden");
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById("adminUsersTable");
+            tbody.innerHTML = "";
+            const usernames = Object.keys(state.users);
+
+            if (usernames.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Nuk ka ende klientë të regjistruar në databazë.</td></tr>`;
+                return;
+            }
+
+            usernames.forEach(uname => {
+                const u = state.users[uname];
+                const isIpLocked = Boolean(state.blockedIps[u.ip]);
+                const tr = document.createElement("tr");
+                tr.className = "hover:bg-slate-900/60 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-white">${u.username}</td>
+                    <td class="p-3 mono text-slate-400">${u.password}</td>
+                    <td class="p-3 mono text-cyan-400">${u.ip}</td>
+                    <td class="p-3 mono font-bold ${u.credits > 0 ? 'text-emerald-400' : 'text-rose-500'}">${u.credits}</td>
+                    <td class="p-3 text-right space-x-1">
+                        <button onclick="adminGiveCredits('${u.username}', 20)" class="bg-indigo-600/30 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/40 px-2 py-1 rounded font-bold transition">+20</button>
+                        <button onclick="adminGiveCredits('${u.username}', 50)" class="bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/40 px-2 py-1 rounded font-bold transition">+50</button>
+                        <button onclick="adminGiveCredits('${u.username}', 100)" class="bg-emerald-600/30 hover:bg-emerald-600 text-emerald-200 hover:text-white border border-emerald-500/40 px-2 py-1 rounded font-bold transition">+100</button>
+                        <button onclick="adminUnlockIp('${u.ip}')" class="bg-slate-800 hover:bg-amber-600 text-slate-300 hover:text-white px-2 py-1 rounded transition" title="Zhblloko IP-në">${isIpLocked ? '🔓 IP' : '✅ E lirë'}</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function adminGiveCredits(username, amount) {
+            if (!state.users[username]) return;
+            state.users[username].credits += amount;
+            await pushCloudDatabase();
+            renderAdminTable();
+        }
+
+        async function adminUnlockIp(ip) {
+            delete state.blockedIps[ip];
+            await pushCloudDatabase();
+            renderAdminTable();
+        }
+
+        async function adminCreateClient() {
+            const username = document.getElementById("newClientUser").value.trim().toLowerCase();
+            const password = document.getElementById("newClientPass").value.trim();
+            const credits = parseInt(document.getElementById("newClientCredits").value || "20");
+
+            if (!username || !password) return;
+            state.users[username] = {
+                username,
+                password,
+                ip: "Krijuar-nga-Admin",
+                credits,
+                createdAt: new Date().toLocaleDateString("sq-AL")
+            };
+            document.getElementById("newClientUser").value = "";
+            document.getElementById("newClientPass").value = "";
+            await pushCloudDatabase();
+            renderAdminTable();
+        }
+
+        // =========================================================================
+        // 6. REAL-TIME AI STUDIO ENGINE (FULL UNDERSTANDING & CODE GENERATION)
+        // =========================================================================
+        function quickPrompt(text) {
+            document.getElementById("promptInput").value = text;
+            generateApp();
+        }
+
+        async function generateApp() {
+            const promptEl = document.getElementById("promptInput");
+            const userPrompt = promptEl.value.trim();
+            if (!userPrompt) return;
+
+            // Check Credits
+            if (!state.currentUser) {
+                if (state.guestCredits <= 0) {
+                    appendChat("system", "⚠️ Kreditet tuaja falas (20) kanë mbaruar! Ju lutem regjistrohuni ose hyni me emrin tuaj (p.sh. sabi) që administratori t'ju dërgojë kredite.");
+                    openAuthModal();
+                    return;
+                }
+            } else if (!state.currentUser.isAdmin) {
+                if (state.currentUser.credits <= 0) {
+                    appendChat("system", `⚠️ Keni 0 kredite në llogarinë "${state.currentUser.username}". Kontaktoni administratorin për t'ju shtuar +20, +50 ose +100 kredite.`);
+                    return;
+                }
+            }
+
+            promptEl.value = "";
+            appendChat("user", userPrompt);
+            document.getElementById("loadingOverlay").classList.remove("hidden");
+            document.getElementById("sendBtn").disabled = true;
+
+            const model = document.getElementById("aiModelSelect").value;
+            const systemInstruction = `Ti je Sabi AI, një arkitekt senior Full-Stack dhe UI/UX Designer si mjegulla.com.
+Kupto çdo kërkesë të përdoruesit në shqip ose anglisht.
+NËSE përdoruesi kërkon të ndërtojë ose të ndryshojë një webfaqe, aplikacion, lojë, formular ose sistem:
+Kthe VETËM kodin e plotë, modern, responsiv dhe funksional HTML5 (me Tailwind CSS CDN <script src="https://cdn.tailwindcss.com"><\/script> dhe JavaScript të integruar brenda një skedari të vetme <!DOCTYPE html>...</html>). Mos shkruaj asnjë shpjegim jashtë kodit HTML.
+NËSE përdoruesi bën thjesht një pyetje bisedore (jo ndërtim aplikacioni), përgjigju qartë dhe shkurt në shqip.`;
+
+            state.conversationHistory.push({ role: "user", content: userPrompt });
+            if (state.conversationHistory.length > 8) {
+                state.conversationHistory = state.conversationHistory.slice(-8);
+            }
+
+            try {
+                const response = await fetch("https://text.pollinations.ai/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        messages: [
+                            { role: "system", content: systemInstruction },
+                            ...state.conversationHistory
+                        ],
+                        model: model,
+                        seed: Math.floor(Math.random() * 100000)
+                    })
+                });
+
+                let replyText = await response.text();
+                state.conversationHistory.push({ role: "assistant", content: replyText });
+
+                // Extract HTML if present
+                const htmlMatch = replyText.match(/<!DOCTYPE html[\s\S]*<\/html>/i) || replyText.match(/<html[\s\S]*<\/html>/i);
+                
+                if (htmlMatch) {
+                    const cleanHTML = htmlMatch[0];
+                    renderGeneratedCode(cleanHTML);
+                    appendChat("ai", "✅ Aplikacioni u ndërtua dhe u përditësua në dritaren Live! Mund ta testoni ose ta shkarkoni si skedar .HTML.");
+                } else {
+                    appendChat("ai", replyText);
+                }
+
+                // Deduct 1 Credit
+                if (!state.currentUser) {
+                    state.guestCredits = Math.max(0, state.guestCredits - 1);
+                    localStorage.setItem("sabi_guest_credits", state.guestCredits);
+                } else if (!state.currentUser.isAdmin) {
+                    state.currentUser.credits = Math.max(0, state.currentUser.credits - 1);
+                    state.users[state.currentUser.username] = state.currentUser;
+                    await pushCloudDatabase();
+                }
+                updateUI();
+
+            } catch (error) {
+                appendChat("system", "❌ Pati një vonesë në rrjet. Ju lutem provoni përsëri.");
+            } finally {
+                document.getElementById("loadingOverlay").classList.add("hidden");
+                document.getElementById("sendBtn").disabled = false;
+            }
+        }
+
+        function appendChat(sender, text) {
+            const stream = document.getElementById("chatStream");
+            const div = document.createElement("div");
+
+            if (sender === "user") {
+                div.className = "bg-indigo-600/20 border border-indigo-500/30 rounded-2xl p-3.5 ml-6 text-sm text-white";
+                div.innerText = text;
+            } else if (sender === "ai") {
+                div.className = "glass rounded-2xl p-3.5 mr-4 text-sm text-slate-200 border-l-4 border-emerald-500 leading-relaxed";
+                div.innerText = text;
+            } else {
+                div.className = "bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 text-xs text-amber-300";
+                div.innerText = text;
+            }
+
+            stream.appendChild(div);
+            stream.scrollTop = stream.scrollHeight;
+        }
+
+        function renderGeneratedCode(html) {
+            state.currentGeneratedHTML = html;
+            document.getElementById("liveFrame").srcdoc = html;
+            document.getElementById("codeViewer").textContent = html;
+            document.getElementById("buildStatus").classList.remove("hidden");
+        }
+
+        function switchTab(tab) {
+            const frame = document.getElementById("liveFrame");
+            const code = document.getElementById("codeViewer");
+            const btnP = document.getElementById("tabPreview");
+            const btnC = document.getElementById("tabCode");
+
+            if (tab === "preview") {
+                frame.classList.remove("hidden");
+                code.classList.add("hidden");
+                btnP.className = "px-3 py-1 rounded-md bg-indigo-600 text-white font-medium transition";
+                btnC.className = "px-3 py-1 rounded-md text-slate-400 hover:text-white transition";
+            } else {
+                frame.classList.add("hidden");
+                code.classList.remove("hidden");
+                btnC.className = "px-3 py-1 rounded-md bg-indigo-600 text-white font-medium transition";
+                btnP.className = "px-3 py-1 rounded-md text-slate-400 hover:text-white transition";
+            }
+        }
+
+        function copyGeneratedCode() {
+            navigator.clipboard.writeText(state.currentGeneratedHTML);
+            alert("Kodi HTML u kopjua në clipboard!");
+        }
+
+        function downloadGeneratedSite() {
+            const blob = new Blob([state.currentGeneratedHTML], { type: "text/html" });
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "sabi_ai_website.html";
+            a.click();
+        }
+
+        function resetProject() {
+            state.conversationHistory = [];
+            renderGeneratedCode(STARTER_HTML);
+            appendChat("system", "🔄 U hap një projekt i ri bosh. Përshkruani çfarë dëshironi të ndërtoni.");
+        }
+
+        // =========================================================================
+        // 7. MODALS & VAULT SETTINGS
+        // =========================================================================
+        function openAuthModal() {
+            document.getElementById("authError").classList.add("hidden");
+            document.getElementById("authModal").classList.remove("hidden");
+        }
+
+        function openVaultModal() {
+            document.getElementById("vaultIdInput").value = VAULT_ID;
+            document.getElementById("vaultModal").classList.remove("hidden");
+        }
+
+        function saveVaultId() {
+            const val = document.getElementById("vaultIdInput").value.trim();
+            if (val) {
+                localStorage.setItem("sabi_vault_id", val);
+                location.reload();
+            }
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add("hidden");
+        }
+    </script>
+</body>
+</html>
