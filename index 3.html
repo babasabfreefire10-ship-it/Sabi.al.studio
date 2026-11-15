@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabi AI — Bisedo & Ndërto</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #09090b; color: #f4f4f5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* HEADER I THJESHTË */
+        header { height: 60px; background: #121215; border-bottom: 1px solid #27272a; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+        .logo { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .logo span { color: #818cf8; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
+        .badge { background: #18181b; border: 1px solid #27272a; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .badge strong { color: #818cf8; }
+        .btn { padding: 7px 14px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: #6366f1; color: #fff; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-admin { background: #f59e0b; color: #09090b; display: none; }
+        .btn-ghost { background: #27272a; color: #e4e4e7; }
+        .btn-ghost:hover { background: #3f3f46; }
+
+        /* MAIN WORKSPACE */
+        main { flex: 1; display: flex; overflow: hidden; }
+        
+        /* CHAT PANEL (MAJTAS) */
+        .chat-section { width: 420px; max-width: 100%; background: #0f0f12; border-right: 1px solid #27272a; display: flex; flex-direction: column; }
+        .chat-box { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+        .msg { padding: 12px 15px; border-radius: 12px; font-size: 14px; line-height: 1.5; max-width: 90%; word-wrap: break-word; }
+        .msg-ai { background: #18181b; border: 1px solid #27272a; align-self: flex-start; color: #e4e4e7; }
+        .msg-user { background: #4f46e5; color: #fff; align-self: flex-end; }
+        .msg-sender { font-size: 10px; font-weight: 700; opacity: 0.7; margin-bottom: 4px; text-transform: uppercase; }
+
+        .input-area { padding: 15px; background: #121215; border-top: 1px solid #27272a; display: flex; gap: 8px; }
+        textarea { flex: 1; background: #18181b; border: 1px solid #27272a; border-radius: 10px; padding: 10px 12px; color: #fff; font-size: 14px; resize: none; height: 46px; outline: none; }
+        textarea:focus { border-color: #6366f1; }
+        .send-btn { background: #6366f1; color: #fff; border: none; border-radius: 10px; padding: 0 18px; font-weight: 700; cursor: pointer; }
+        .send-btn:hover { background: #4f46e5; }
+
+        /* PREVIEW PANEL (DJATHTAS) */
+        .preview-section { flex: 1; display: flex; flex-direction: column; background: #18181b; }
+        .preview-bar { height: 46px; background: #121215; border-bottom: 1px solid #27272a; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
+        .preview-title { font-size: 12px; color: #a1a1aa; font-weight: 600; }
+        .preview-actions { display: flex; gap: 8px; }
+        iframe { flex: 1; width: 100%; border: none; background: #fff; }
+        pre { flex: 1; width: 100%; background: #09090b; color: #34d399; padding: 16px; overflow: auto; font-family: monospace; font-size: 12px; display: none; }
+
+        /* MODALS */
+        .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+        .modal { background: #18181b; border: 1px solid #27272a; border-radius: 14px; width: 100%; max-width: 400px; padding: 24px; position: relative; }
+        .modal h3 { margin-bottom: 6px; font-size: 18px; }
+        .modal p { font-size: 12px; color: #a1a1aa; margin-bottom: 16px; }
+        .close-btn { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #a1a1aa; font-size: 18px; cursor: pointer; }
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 12px; color: #a1a1aa; margin-bottom: 4px; }
+        .input-group input { width: 100%; background: #09090b; border: 1px solid #27272a; border-radius: 8px; padding: 10px; color: #fff; font-size: 14px; outline: none; }
+        .tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+        .tab { flex: 1; padding: 8px; background: #09090b; border: 1px solid #27272a; color: #a1a1aa; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .tab.active { background: #6366f1; color: #fff; border-color: #6366f1; }
+        .client-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #27272a; font-size: 13px; }
+        .credit-btns { display: flex; gap: 4px; }
+        .credit-btns button { padding: 4px 8px; font-size: 11px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; background: #27272a; color: #fff; }
+        .credit-btns button:hover { background: #6366f1; }
+
+        @media (max-width: 768px) {
+            main { flex-direction: column; }
+            .chat-section { width: 100%; height: 55%; border-right: none; border-bottom: 1px solid #27272a; }
+            .preview-section { height: 45%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Sabi<span>.ai</span></div>
+        <div class="header-right">
+            <div class="badge"><span id="lblUser">Vizitor</span>: <strong id="lblCredits">5 Kredite</strong></div>
+            <button id="btnAdmin" class="btn btn-admin">👑 Admin</button>
+            <button id="btnLogin" class="btn btn-primary">Hyr</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- BISEDA ME BOTIN -->
+        <section class="chat-section">
+            <div class="chat-box" id="chatBox">
+                <div class="msg msg-ai">
+                    <div class="msg-sender">Sabi AI</div>
+                    Përshëndetje! Mund të më bësh çdo pyetje (p.sh. <em>"Si je?"</em>, <em>"Më shkruaj një tekst"</em>) ose më thuaj të krijoj një webfaqe (p.sh. <em>"Krijo një faqe për restorant"</em>).
+                </div>
+            </div>
+            <div class="input-area">
+                <textarea id="txtPrompt" placeholder="Shkruaj pyetjen ose kërkesën këtu..."></textarea>
+                <button id="btnSend" class="send-btn">Dërgo</button>
+            </div>
+        </section>
+
+        <!-- PAMJA E FAQES SË KRIJUAR -->
+        <section class="preview-section">
+            <div class="preview-bar">
+                <span class="preview-title">Pamja e Webfaqes</span>
+                <div class="preview-actions">
+                    <button id="btnToggleCode" class="btn btn-ghost">Shiko Kodin</button>
+                    <button id="btnDownload" class="btn btn-primary">Shkarko HTML</button>
+                </div>
+            </div>
+            <iframe id="framePreview"></iframe>
+            <pre id="codePreview"></pre>
+        </section>
+    </main>
+
+    <!-- MODAL HYRJE -->
+    <div class="modal-bg" id="modalAuth">
+        <div class="modal">
+            <button class="close-btn" id="closeAuth">✕</button>
+            <h3>Hyr në Sabi AI</h3>
+            <p>Zgjidh llogarinë e klientit ose administratorit.</p>
+            <div class="tabs">
+                <button class="tab active" id="tabClient">Klient</button>
+                <button class="tab" id="tabAdmin">Admin</button>
+            </div>
+            <div id="boxClient">
+                <div class="input-group">
+                    <label>Emri i përdoruesit (p.sh. sabi)</label>
+                    <input type="text" id="inClientName" placeholder="Shkruaj emrin...">
+                </div>
+                <button class="btn btn-primary" style="width:100%; padding:10px;" id="doClientLogin">Vazhdo</button>
+            </div>
+            <div id="boxAdmin" style="display:none;">
+                <div class="input-group">
+                    <label>Email Admin</label>
+                    <input type="text" id="inAdminEmail" placeholder="admin@sabi">
+                </div>
+                <div class="input-group">
+                    <label>Fjalëkalimi</label>
+                    <input type="password" id="inAdminPass" placeholder="••••••••">
+                </div>
+                <button class="btn btn-admin" style="width:100%; padding:10px; display:block;" id="doAdminLogin">Hyr si Admin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ADMIN -->
+    <div class="modal-bg" id="modalAdmin">
+        <div class="modal">
+            <button class="close-btn" id="closeAdmin">✕</button>
+            <h3>👑 Paneli i Administratorit</h3>
+            <p>Kredite: <strong>∞ Pa Limit</strong>. Shto kredite për klientët.</p>
+            <div style="display:flex; gap:6px; margin-bottom:14px;">
+                <input type="text" id="inNewUser" placeholder="Emri i klientit (p.sh. sabi)" style="flex:1; background:#09090b; border:1px solid #27272a; border-radius:8px; padding:8px; color:#fff; font-size:13px;">
+                <button class="btn btn-primary" id="doAddUser">+ Shto</button>
+            </div>
+            <div id="listUsers" style="max-height:220px; overflow-y:auto;"></div>
+        </div>
+    </div>
+
+    <script>
+        // STATE
+        let users = JSON.parse(localStorage.getItem('sabi_simple_users')) || {
+            'sabi': { name: 'sabi', credits: 5 }
+        };
+        let session = JSON.parse(localStorage.getItem('sabi_simple_session')) || {
+            name: 'Vizitor', credits: 5, isAdmin: false
+        };
+        let showingCode = false;
+        let currentHTML = `<!DOCTYPE html><html lang="sq"><head><meta charset="UTF-8"><style>body{font-family:sans-serif;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;text-align:center;padding:20px;}h1{color:#818cf8;}</style></head><body><div><h1>Sabi AI</h1><p>Shkruaj në bisedë çfarë faqeje dëshiron dhe ajo do të shfaqet këtu.</p></div></body></html>`;
+
+        function save() {
+            localStorage.setItem('sabi_simple_users', JSON.stringify(users));
+            if (!session.isAdmin && session.name !== 'Vizitor' && users[session.name]) {
+                session.credits = users[session.name].credits;
+            }
+            localStorage.setItem('sabi_simple_session', JSON.stringify(session));
+            renderHeader();
+        }
+
+        function renderHeader() {
+            document.getElementById('lblUser').textContent = session.name;
+            if (session.isAdmin) {
+                document.getElementById('lblCredits').textContent = '∞ Pa Limit';
+                document.getElementById('btnAdmin').style.display = 'inline-block';
+                document.getElementById('btnLogin').textContent = 'Dil';
+            } else {
+                document.getElementById('lblCredits').textContent = session.credits + ' Kredite';
+                document.getElementById('btnAdmin').style.display = 'none';
+                document.getElementById('btnLogin').textContent = session.name === 'Vizitor' ? 'Hyr' : 'Ndrysho';
+            }
+        }
+
+        function updatePreview() {
+            document.getElementById('framePreview').srcdoc = currentHTML;
+            document.getElementById('codePreview').textContent = currentHTML;
+        }
+
+        function addChat(who, text) {
+            const box = document.getElementById('chatBox');
+            const div = document.createElement('div');
+            div.className = 'msg ' + (who === 'user' ? 'msg-user' : 'msg-ai');
+            div.innerHTML = `<div class="msg-sender">${who === 'user' ? 'Ti' : 'Sabi AI'}</div>${text}`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // GJENERATORI I WEBFAQES NGA KËRKESA
+        function buildPage(prompt) {
+            const title = prompt.length > 35 ? prompt.substring(0, 35) + '...' : prompt;
+            return `<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${title}</title>
+<style>
+  body { margin:0; font-family: Arial, sans-serif; background:#0f172a; color:#f8fafc; }
+  header { background:#1e293b; padding:20px; text-align:center; border-bottom:1px solid #334155; }
+  header h1 { margin:0; color:#38bdf8; font-size:28px; }
+  .hero { padding:60px 20px; text-align:center; max-width:700px; margin:auto; }
+  .hero p { color:#94a3b8; font-size:18px; line-height:1.6; }
+  .btn { display:inline-block; margin-top:20px; padding:12px 28px; background:#38bdf8; color:#0f172a; font-weight:bold; text-decoration:none; border-radius:8px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px; max-width:900px; margin:20px auto 60px; padding:0 20px; }
+  .card { background:#1e293b; padding:24px; border-radius:12px; border:1px solid #334155; }
+  .card h3 { color:#38bdf8; margin-top:0; }
+  footer { text-align:center; padding:20px; background:#020617; color:#64748b; font-size:13px; }
+</style>
+</head>
+<body>
+  <header><h1>${title.toUpperCase()}</h1></header>
+  <section class="hero">
+    <h2>Mirësevini në faqen tonë zyrtare</h2>
+    <p>${prompt}</p>
+    <a href="#kontakt" class="btn" onclick="alert('Faleminderit! Kërkesa u dërgua.')">Na Kontaktoni</a>
+  </section>
+  <section class="cards">
+    <div class="card"><h3>Shërbimi 1</h3><p>Cilësi e lartë dhe shërbim i shpejtë për çdo klient.</p></div>
+    <div class="card"><h3>Shërbimi 2</h3><p>Çmime konkurruese dhe mbështetje e dedikuar 24/7.</p></div>
+    <div class="card"><h3>Shërbimi 3</h3><p>Zgjidhje moderne të përshtatura sipas kërkesave tuaja.</p></div>
+  </section>
+  <footer>© 2026 ${title} — Ndërtuar me Sabi AI</footer>
+</body>
+</html>`;
+        }
+
+        // DËRGIMI I MESAZHIT (BISEDË LIVE ME AI FALAS + KRIJIM FAQEJE)
+        async function handleSend() {
+            const input = document.getElementById('txtPrompt');
+            const text = input.value.trim();
+            if (!text) return;
+
+            if (!session.isAdmin && session.credits <= 0) {
+                addChat('ai', '⚠️ Ju kanë mbaruar kreditet (0). Klikoni <strong>Hyr</strong> dhe kërkoni nga admini t'ju shtojë kredite.');
+                return;
+            }
+
+            addChat('user', text);
+            input.value = '';
+
+            // Zbrit 1 kredit
+            if (!session.isAdmin) {
+                session.credits -= 1;
+                if (session.name !== 'Vizitor' && users[session.name]) {
+                    users[session.name].credits = session.credits;
+                }
+                save();
+            }
+
+            const lower = text.toLowerCase();
+            const isBuild = lower.includes('krijo') || lower.includes('nderto') || lower.includes('ndërto') || lower.includes('faqe') || lower.includes('web') || lower.includes('dyqan') || lower.includes('sajt') || lower.includes('app');
+
+            if (isBuild) {
+                addChat('ai', '⏳ Po ndërtoj faqen tuaj...');
+                setTimeout(() => {
+                    currentHTML = buildPage(text);
+                    updatePreview();
+                    addChat('ai', '✅ U krijua! Shikoni rezultatin në dritaren e webfaqes ose klikoni <strong>Shkarko HTML</strong>.');
+                }, 400);
+            } else {
+                // Bisedë e drejtpërdrejtë me AI Online Falas (Pollinations Text API)
+                addChat('ai', '💭 Duke menduar...');
+                const chatBox = document.getElementById('chatBox');
+                const lastMsg = chatBox.lastElementChild;
+
+                try {
+                    const res = await fetch('https://text.pollinations.ai/' + encodeURIComponent('Përgjigju shkurt dhe qartë në gjuhën shqipe: ' + text));
+                    if (res.ok) {
+                        const reply = await res.text();
+                        lastMsg.innerHTML = `<div class="msg-sender">Sabi AI</div>${reply.replace(/\n/g, '<br>')}`;
+                    } else {
+                        throw new Error('Offline');
+                    }
+                } catch (e) {
+                    lastMsg.innerHTML = `<div class="msg-sender">Sabi AI</div>Jam gati t'ju ndihmoj! Më pyesni çfarë të dëshironi ose më shkruani: <em>"Krijo një faqe për..."</em> dhe unë do ta ndërtoj menjëherë.`;
+                }
+            }
+        }
+
+        document.getElementById('btnSend').addEventListener('click', handleSend);
+        document.getElementById('txtPrompt').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // SHIKO KODIN / SHKARKO
+        document.getElementById('btnToggleCode').addEventListener('click', () => {
+            showingCode = !showingCode;
+            document.getElementById('framePreview').style.display = showingCode ? 'none' : 'block';
+            document.getElementById('codePreview').style.display = showingCode ? 'block' : 'none';
+            document.getElementById('btnToggleCode').textContent = showingCode ? 'Shiko Pamjen' : 'Shiko Kodin';
+        });
+
+        document.getElementById('btnDownload').addEventListener('click', () => {
+            const blob = new Blob([currentHTML], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'faqja_ime.html';
+            a.click();
+        });
+
+        // AUTH MODAL
+        document.getElementById('btnLogin').addEventListener('click', () => {
+            if (session.isAdmin) {
+                session = { name: 'Vizitor', credits: 5, isAdmin: false };
+                save();
+                return;
+            }
+            document.getElementById('modalAuth').style.display = 'flex';
+        });
+        document.getElementById('closeAuth').addEventListener('click', () => document.getElementById('modalAuth').style.display = 'none');
+
+        document.getElementById('tabClient').addEventListener('click', () => {
+            document.getElementById('tabClient').classList.add('active');
+            document.getElementById('tabAdmin').classList.remove('active');
+            document.getElementById('boxClient').style.display = 'block';
+            document.getElementById('boxAdmin').style.display = 'none';
+        });
+
+        document.getElementById('tabAdmin').addEventListener('click', () => {
+            document.getElementById('tabAdmin').classList.add('active');
+            document.getElementById('tabClient').classList.remove('active');
+            document.getElementById('boxAdmin').style.display = 'block';
+            document.getElementById('boxClient').style.display = 'none';
+        });
+
+        document.getElementById('doClientLogin').addEventListener('click', () => {
+            const name = document.getElementById('inClientName').value.trim().toLowerCase();
+            if (!name) return;
+            if (!users[name]) users[name] = { name: name, credits: 5 };
+            session = { name: name, credits: users[name].credits, isAdmin: false };
+            save();
+            document.getElementById('modalAuth').style.display = 'none';
+        });
+
+        document.getElementById('doAdminLogin').addEventListener('click', () => {
+            const email = document.getElementById('inAdminEmail').value.trim();
+            const pass = document.getElementById('inAdminPass').value.trim();
+            if (email === 'admin@sabi' && pass === 'sabi007') {
+                session = { name: 'Admin', credits: 999999, isAdmin: true };
+                save();
+                document.getElementById('modalAuth').style.display = 'none';
+            } else {
+                alert('Email ose fjalëkalim i gabuar!');
+            }
+        });
+
+        // ADMIN PANEL
+        function renderUsers() {
+            const list = document.getElementById('listUsers');
+            list.innerHTML = '';
+            Object.values(users).forEach(u => {
+                const row = document.createElement('div');
+                row.className = 'client-row';
+                row.innerHTML = `
+                    <div><strong>${u.name}</strong> — <span style="color:#818cf8">${u.credits} kredite</span></div>
+                    <div class="credit-btns">
+                        <button onclick="giveCredit('${u.name}', 20)">+20</button>
+                        <button onclick="giveCredit('${u.name}', 50)">+50</button>
+                        <button onclick="giveCredit('${u.name}', 100)">+100</button>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+        }
+
+        window.giveCredit = function(name, amt) {
+            if (users[name]) {
+                users[name].credits += amt;
+                save();
+                renderUsers();
+            }
+        };
+
+        document.getElementById('btnAdmin').addEventListener('click', () => {
+            renderUsers();
+            document.getElementById('modalAdmin').style.display = 'flex';
+        });
+        document.getElementById('closeAdmin').addEventListener('click', () => document.getElementById('modalAdmin').style.display = 'none');
+
+        document.getElementById('doAddUser').addEventListener('click', () => {
+            const name = document.getElementById('inNewUser').value.trim().toLowerCase();
+            if (!name) return;
+            if (!users[name]) users[name] = { name: name, credits: 0 };
+            save();
+            renderUsers();
+            document.getElementById('inNewUser').value = '';
+        });
+
+        // START
+        renderHeader();
+        updatePreview();
+    </script>
+</body>
+</html>
