@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="sq" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabi AI - Asistent & Ndërtues Aplikacionesh Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden font-sans">
+
+    <!-- Header -->
+    <header class="h-14 border-b border-slate-800 bg-slate-900/90 backdrop-blur px-4 flex items-center justify-between shrink-0 z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
+                S
+            </div>
+            <div>
+                <h1 class="font-bold text-base tracking-tight flex items-center gap-2">
+                    Sabi AI Studio
+                    <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Online
+                    </span>
+                </h1>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-sm">
+            <div id="creditBadge" class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-medium text-slate-300">
+                Kredite: <span id="creditCount" class="text-indigo-400 font-bold">20</span>
+            </div>
+
+            <button id="adminPanelBtn" onclick="openModal('adminModal')" class="hidden px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30 hover:bg-amber-500/20 text-xs font-semibold transition">
+                Admin Panel
+            </button>
+
+            <button onclick="openModal('apiModal')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition flex items-center gap-1.5">
+                <span id="apiDot" class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                API & Lidhja
+            </button>
+
+            <button id="authBtn" onclick="openModal('authModal')" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition">
+                Hyr / Admin
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Split Workspace -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        
+        <!-- Left: Live AI Chat & Prompting -->
+        <div class="w-full lg:w-[430px] xl:w-[460px] border-r border-slate-800 bg-slate-900/50 flex flex-col h-1/2 lg:h-full shrink-0">
+            <!-- Chat Messages -->
+            <div id="chatBox" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div class="flex gap-3">
+                    <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">S</div>
+                    <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl rounded-tl-none p-3.5 text-sm leading-relaxed text-slate-200 shadow-sm">
+                        Përshëndetje! Unë jam <b>Sabi AI</b>. Mund të bisedosh me mua për çdo temë ose të më kërkosh të ndërtoj menjëherë çdo lloj aplikacioni, sajti, dyqani, loje apo mjeti.
+                        <div class="mt-2.5 flex flex-wrap gap-1.5">
+                            <button onclick="quickPrompt('Ndërto një faqe restoranti modern me menu dhe rezervim tavoline')" class="text-xs bg-slate-900 hover:bg-indigo-600/20 hover:border-indigo-500/50 border border-slate-700 px-2.5 py-1 rounded-lg transition text-left">🍕 Sajt Restoranti</button>
+                            <button onclick="quickPrompt('Krijo një dyqan online për telefona dhe aksesorë me shportë blerjeje')" class="text-xs bg-slate-900 hover:bg-indigo-600/20 hover:border-indigo-500/50 border border-slate-700 px-2.5 py-1 rounded-lg transition text-left">🛒 Dyqan Online</button>
+                            <button onclick="quickPrompt('Ndërto një aplikacion kalkulatori dhe menaxhimi shpenzimesh')" class="text-xs bg-slate-900 hover:bg-indigo-600/20 hover:border-indigo-500/50 border border-slate-700 px-2.5 py-1 rounded-lg transition text-left">📊 Menaxher Financash</button>
+                            <button onclick="quickPrompt('Krijo një lojë të shpejtë me klikime dhe pikë')" class="text-xs bg-slate-900 hover:bg-indigo-600/20 hover:border-indigo-500/50 border border-slate-700 px-2.5 py-1 rounded-lg transition text-left">🎮 Lojë Interaktive</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="p-3 border-t border-slate-800 bg-slate-900">
+                <form id="chatForm" onsubmit="handleSend(event)" class="relative">
+                    <textarea id="promptInput" rows="2" placeholder="Shkruaj mesazhin ose përshkruaj aplikacionin që do të krijosh..." 
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-xl pl-3.5 pr-12 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none"
+                        onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); handleSend(event); }"></textarea>
+                    <button type="submit" id="sendBtn" class="absolute right-2 bottom-2.5 w-8 h-8 rounded-lg bg-indigo-600 hover:bg-indigo-500 flex items-center justify-center text-white transition shadow">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                    </button>
+                </form>
+                <div class="flex justify-between items-center mt-1.5 px-1 text-[11px] text-slate-500">
+                    <span id="engineStatus">Modaliteti: AI Online (Free + API)</span>
+                    <button onclick="clearChat()" class="hover:text-slate-300">Pastro bisedën</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Live App Preview & Code -->
+        <div class="flex-1 flex flex-col bg-slate-950 h-1/2 lg:h-full overflow-hidden">
+            <!-- Preview Toolbar -->
+            <div class="h-11 border-b border-slate-800 bg-slate-900/60 px-3 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button id="tabPreview" onclick="switchTab('preview')" class="px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition">Pamja Live</button>
+                    <button id="tabCode" onclick="switchTab('code')" class="px-3 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition">Kodi HTML</button>
+                </div>
+
+                <div class="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 bg-slate-950 px-3 py-1 rounded-md border border-slate-800">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span id="previewUrl">app-juaj.sabi.al</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="copyCode()" class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 transition">
+                        Kopjo Kodin
+                    </button>
+                    <button onclick="downloadApp()" class="px-3 py-1 rounded-md bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition flex items-center gap-1">
+                        Shkarko HTML
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content Frame -->
+            <div class="flex-1 relative overflow-hidden bg-white">
+                <iframe id="previewFrame" class="w-full h-full border-0" sandbox="allow-scripts allow-forms allow-modals allow-same-origin"></iframe>
+                <textarea id="codeEditor" readonly class="hidden w-full h-full bg-slate-950 text-emerald-400 font-mono text-xs p-4 focus:outline-none resize-none"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Modal -->
+    <div id="apiModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-bold text-lg">Lidhja me API Online</h2>
+                <button onclick="closeModal('apiModal')" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <p class="text-xs text-slate-400 mb-4 leading-relaxed">
+                Sabi AI punon automatikisht online falas. Nëse dëshiron fuqi maksimale me çelësin tënd personal (Gemini ose OpenAI), vendose më poshtë:
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Ofruesi AI</label>
+                    <select id="apiProvider" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                        <option value="auto">Automatik Online (Falas / Pa çelës)</option>
+                        <option value="gemini">Google Gemini API Key</option>
+                        <option value="openai">OpenAI API Key (GPT-4o)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">API Key (Opsionale)</label>
+                    <input id="apiKeyInput" type="password" placeholder="AIzaSy... ose sk-..." class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <button onclick="saveApiSettings()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg text-sm transition">
+                    Ruaj Lidhjen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-bold text-lg">Hyr në Llogari</h2>
+                <button onclick="closeModal('authModal')" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div id="loggedInView" class="hidden space-y-3">
+                <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-sm">
+                    <div class="text-slate-400 text-xs">Përdoruesi aktiv:</div>
+                    <div id="currentUserEmail" class="font-bold text-indigo-400"></div>
+                </div>
+                <button onclick="logoutUser()" class="w-full bg-rose-600 hover:bg-rose-500 text-white font-semibold py-2 rounded-lg text-sm">
+                    Dil nga llogaria
+                </button>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Email / Përdoruesi</label>
+                    <input id="loginEmail" type="text" required placeholder="admin@sabi" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Fjalëkalimi</label>
+                    <input id="loginPass" type="password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg text-sm">
+                    Hyr
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-5 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-bold text-lg text-amber-400">Paneli i Administratorit (Sabi)</h2>
+                <button onclick="closeModal('adminModal')" class="text-slate-400 hover:text-white">✕</button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <input id="newClientEmail" type="text" placeholder="Email i klientit të ri" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                <input id="newClientPass" type="text" placeholder="Fjalëkalimi" class="w-28 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                <button onclick="addClient()" class="bg-emerald-600 hover:bg-emerald-500 px-3 py-2 rounded-lg text-xs font-bold">Shto</button>
+            </div>
+            <div id="clientList" class="space-y-2 max-h-60 overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let state = {
+            user: JSON.parse(localStorage.getItem('sabi_user')) || null,
+            credits: parseInt(localStorage.getItem('sabi_credits')) || 20,
+            clients: JSON.parse(localStorage.getItem('sabi_clients')) || [
+                { email: 'klient1@sabi.al', pass: '1234', credits: 25 }
+            ],
+            provider: localStorage.getItem('sabi_provider') || 'auto',
+            apiKey: localStorage.getItem('sabi_apikey') || '',
+            currentHtml: ''
+        };
+
+        const starterHtml = `<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"><\/script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen flex items-center justify-center p-6 font-sans">
+  <div class="max-w-lg text-center space-y-4">
+    <div class="inline-block px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-semibold">Sabi AI Live Preview</div>
+    <h1 class="text-4xl font-extrabold tracking-tight">Gati për të ndërtuar idenë tënde</h1>
+    <p class="text-slate-400 text-sm leading-relaxed">Shkruaj në bisedën majtas çfarë aplikacioni, sajti ose mjeti dëshiron dhe ai do të shfaqet automatikisht këtu brenda pak sekondash.</p>
+  </div>
+</body>
+</html>`;
+
+        function init() {
+            updateUI();
+            setPreview(starterHtml);
+            document.getElementById('apiProvider').value = state.provider;
+            document.getElementById('apiKeyInput').value = state.apiKey;
+        }
+
+        function updateUI() {
+            const isAdmin = state.user && state.user.email === 'admin@sabi';
+            document.getElementById('creditCount').innerText = isAdmin ? '∞ (Pa Limit)' : state.credits;
+            document.getElementById('adminPanelBtn').classList.toggle('hidden', !isAdmin);
+            
+            if (state.user) {
+                document.getElementById('authBtn').innerText = state.user.email;
+                document.getElementById('loginForm').classList.add('hidden');
+                document.getElementById('loggedInView').classList.remove('hidden');
+                document.getElementById('currentUserEmail').innerText = state.user.email;
+            } else {
+                document.getElementById('authBtn').innerText = 'Hyr / Admin';
+                document.getElementById('loginForm').classList.remove('hidden');
+                document.getElementById('loggedInView').classList.add('hidden');
+            }
+            renderClients();
+        }
+
+        function setPreview(html) {
+            state.currentHtml = html;
+            const frame = document.getElementById('previewFrame');
+            frame.srcdoc = html;
+            document.getElementById('codeEditor').value = html;
+        }
+
+        function switchTab(tab) {
+            const isPreview = tab === 'preview';
+            document.getElementById('previewFrame').classList.toggle('hidden', !isPreview);
+            document.getElementById('codeEditor').classList.toggle('hidden', isPreview);
+            document.getElementById('tabPreview').className = isPreview ? 'px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition' : 'px-3 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition';
+            document.getElementById('tabCode').className = !isPreview ? 'px-3 py-1 rounded-md text-xs font-medium bg-indigo-600 text-white transition' : 'px-3 py-1 rounded-md text-xs font-medium text-slate-400 hover:text-white transition';
+        }
+
+        function quickPrompt(text) {
+            document.getElementById('promptInput').value = text;
+            handleSend(new Event('submit'));
+        }
+
+        function appendMsg(role, htmlText) {
+            const box = document.getElementById('chatBox');
+            const wrapper = document.createElement('div');
+            wrapper.className = role === 'user' ? 'flex gap-3 justify-end' : 'flex gap-3';
+            
+            if (role === 'user') {
+                wrapper.innerHTML = `<div class="bg-indigo-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 text-sm max-w-[85%] shadow">${escapeHtml(htmlText)}</div>`;
+            } else {
+                wrapper.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">S</div>
+                    <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl rounded-tl-none p-3.5 text-sm leading-relaxed text-slate-200 max-w-[88%] shadow-sm">${htmlText}</div>
+                `;
+            }
+            box.appendChild(wrapper);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function showTyping() {
+            const box = document.getElementById('chatBox');
+            const id = 'typing-' + Date.now();
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = 'flex gap-3';
+            el.innerHTML = `
+                <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold shrink-0">S</div>
+                <div class="bg-slate-800 border border-slate-700 rounded-2xl rounded-tl-none px-4 py-3 flex items-center gap-1">
+                    <span class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></span>
+                    <span class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></span>
+                    <span class="w-2 h-2 bg-indigo-400 rounded-full typing-dot"></span>
+                </div>
+            `;
+            box.appendChild(el);
+            box.scrollTop = box.scrollHeight;
+            return id;
+        }
+
+        function removeTyping(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        function isBuildRequest(text) {
+            const keywords = ['nderto', 'ndërto', 'krijo', 'bej', 'bëj', 'app', 'aplikacion', 'faqe', 'sajt', 'web', 'dyqan', 'loje', 'lojë', 'kalkulator', 'formular', 'portofol', 'restorant', 'klinik', 'hotel', 'sistem', 'panel', 'kod', 'html', 'website', 'build', 'create', 'make'];
+            const lower = text.toLowerCase();
+            return keywords.some(k => lower.includes(k));
+        }
+
+        async function handleSend(e) {
+            e.preventDefault();
+            const input = document.getElementById('promptInput');
+            const prompt = input.value.trim();
+            if (!prompt) return;
+
+            const isAdmin = state.user && state.user.email === 'admin@sabi';
+            if (!isAdmin && state.credits <= 0) {
+                appendMsg('ai', 'Nuk keni më kredite të mjaftueshme. Kontaktoni administratorin <b>admin@sabi</b> për të shtuar kredite.');
+                return;
+            }
+
+            input.value = '';
+            appendMsg('user', prompt);
+            const typingId = showTyping();
+
+            try {
+                const wantsBuild = isBuildRequest(prompt);
+                let result = null;
+
+                // 1. Try User's Custom API Key if configured
+                if (state.provider === 'gemini' && state.apiKey) {
+                    result = await callGemini(prompt, wantsBuild);
+                } else if (state.provider === 'openai' && state.apiKey) {
+                    result = await callOpenAI(prompt, wantsBuild);
+                } else {
+                    // 2. Free Online Pollinations AI Engine (No Key Needed, Fast & Live)
+                    result = await callFreeOnlineAI(prompt, wantsBuild);
+                }
+
+                removeTyping(typingId);
+
+                if (result.html) {
+                    setPreview(result.html);
+                    const slug = prompt.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 18) || 'projekt';
+                    document.getElementById('previewUrl').innerText = `${slug}.sabi.al`;
+                    appendMsg('ai', result.reply || 'Aplikacioni u ndërtua dhe u shfaq në ekranin djathtas! Mund ta testosh ose ta shkarkosh si skedar HTML.');
+                } else {
+                    appendMsg('ai', result.reply);
+                }
+
+                if (!isAdmin) {
+                    state.credits--;
+                    localStorage.setItem('sabi_credits', state.credits);
+                    updateUI();
+                }
+
+            } catch (err) {
+                removeTyping(typingId);
+                // Smart instant fallback if offline or network blocked
+                const fallback = generateLocalSmartResponse(prompt, isBuildRequest(prompt));
+                if (fallback.html) {
+                    setPreview(fallback.html);
+                    appendMsg('ai', fallback.reply);
+                } else {
+                    appendMsg('ai', fallback.reply);
+                }
+            }
+        }
+
+        // Free Online AI API (Works directly from browser without API key)
+        async function callFreeOnlineAI(prompt, wantsBuild) {
+            const systemInstruction = wantsBuild
+                ? "Ti je Sabi AI, një zhvillues ekspert web. Kthe VETËM kodin e plotë dhe funksional HTML5 me Tailwind CSS (<script src='https://cdn.tailwindcss.com'></script>) dhe JavaScript interaktiv brenda një skedari të vetëm për kërkesën e përdoruesit. Përdor gjuhën shqipe në ndërfaqe. Mos shkruaj asnjë tekst shpjegues jashtë kodit HTML. Fillo direkt me <!DOCTYPE html>."
+                : "Ti je Sabi AI, një asistent inteligjent, i shpejtë dhe miqësor në gjuhën shqipe. Përgjigju qartë, shkurt dhe saktë pyetjes së përdoruesit.";
+
+            const response = await fetch('https://text.pollinations.ai/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    messages: [
+                        { role: 'system', content: systemInstruction },
+                        { role: 'user', content: prompt }
+                    ],
+                    model: 'openai',
+                    seed: Math.floor(Math.random() * 10000)
+                })
+            });
+
+            if (!response.ok) throw new Error('Network error');
+            const text = await response.text();
+
+            if (wantsBuild) {
+                const extracted = extractHtml(text);
+                if (extracted) {
+                    return {
+                        html: extracted,
+                        reply: 'Gati! E ndërtova aplikacionin sipas kërkesës tënde. Shikoje dhe provoje në dritaren djathtas.'
+                    };
+                }
+            }
+            return { html: null, reply: formatText(text) };
+        }
+
+        async function callGemini(prompt, wantsBuild) {
+            const sys = wantsBuild
+                ? "Gjenero VETËM kod të plotë HTML5 me Tailwind CSS (<script src='https://cdn.tailwindcss.com'></script>) dhe JS funksional në shqip. Fillo me <!DOCTYPE html> dhe mos shto tekst tjetër."
+                : "Ti je Sabi AI. Përgjigju në shqip qartë dhe shpejt.";
+
+            const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: sys + "\n\nKërkesa: " + prompt }] }]
+                })
+            });
+            const data = await res.json();
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (wantsBuild) {
+                const html = extractHtml(text);
+                if (html) return { html, reply: 'Aplikacioni u gjenerua me Gemini AI dhe është aktiv djathtas!' };
+            }
+            return { html: null, reply: formatText(text) };
+        }
+
+        async function callOpenAI(prompt, wantsBuild) {
+            const sys = wantsBuild
+                ? "Gjenero VETËM kod të plotë HTML5 me Tailwind CSS (<script src='https://cdn.tailwindcss.com'></script>) dhe JS funksional në shqip. Fillo me <!DOCTYPE html>."
+                : "Ti je Sabi AI. Përgjigju në shqip qartë dhe shpejt.";
+
+            const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${state.apiKey}`
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o-mini',
+                    messages: [
+                        { role: 'system', content: sys },
+                        { role: 'user', content: prompt }
+                    ]
+                })
+            });
+            const data = await res.json();
+            const text = data.choices?.[0]?.message?.content || '';
+            if (wantsBuild) {
+                const html = extractHtml(text);
+                if (html) return { html, reply: 'Aplikacioni u gjenerua me OpenAI dhe është gati!' };
+            }
+            return { html: null, reply: formatText(text) };
+        }
+
+        function extractHtml(raw) {
+            let clean = raw.replace(/```html/gi, '').replace(/```/g, '').trim();
+            const start = clean.indexOf('<!DOCTYPE html>');
+            const htmlStart = start !== -1 ? start : clean.indexOf('<html');
+            const end = clean.lastIndexOf('</html>');
+            if (htmlStart !== -1 && end !== -1) {
+                return clean.slice(htmlStart, end + 7);
+            }
+            return null;
+        }
+
+        function generateLocalSmartResponse(prompt, wantsBuild) {
+            if (!wantsBuild) {
+                return {
+                    html: null,
+                    reply: `Po të dëgjoj! Më trego nëse dëshiron të ndërtojmë një faqe web, dyqan online, kalkulator apo aplikacion dhe unë e krijoj menjëherë për ty.`
+                };
+            }
+            const title = prompt.slice(0, 40);
+            const html = `<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"><\/script>
+<title>${escapeHtml(title)}</title>
+</head>
+<body class="bg-slate-900 text-white min-h-screen font-sans">
+  <nav class="border-b border-slate-800 px-6 py-4 flex justify-between items-center bg-slate-950">
+    <span class="font-bold text-xl text-indigo-400">Sabi App</span>
+    <button onclick="alert('Veprimi u krye me sukses!')" class="bg-indigo-600 hover:bg-indigo-500 px-4 py-2 rounded-lg text-sm font-semibold">Fillo Tani</button>
+  </nav>
+  <main class="max-w-4xl mx-auto py-16 px-6 text-center space-y-6">
+    <h1 class="text-4xl font-extrabold">${escapeHtml(prompt)}</h1>
+    <p class="text-slate-400 max-w-xl mx-auto">Ky aplikacion u gjenerua automatikisht nga Sabi AI Studio. Mund ta modifikosh ose ta shkarkosh direkt.</p>
+    <div class="grid md:grid-cols-3 gap-4 pt-8 text-left">
+      <div class="p-5 rounded-xl bg-slate-800 border border-slate-700">
+        <h3 class="font-bold text-lg mb-2 text-indigo-400">Shpejtësi Maksimale</h3>
+        <p class="text-sm text-slate-300">Ndërtuar me teknologji moderne dhe dizajn responsiv për çdo ekran.</p>
+      </div>
+      <div class="p-5 rounded-xl bg-slate-800 border border-slate-700">
+        <h3 class="font-bold text-lg mb-2 text-emerald-400">Gati për Përdorim</h3>
+        <p class="text-sm text-slate-300">Sistemi është aktiv dhe i gatshëm për klientët tuaj.</p>
+      </div>
+      <div class="p-5 rounded-xl bg-slate-800 border border-slate-700">
+        <h3 class="font-bold text-lg mb-2 text-cyan-400">Personalizim i Plotë</h3>
+        <p class="text-sm text-slate-300">Kërko çdo ndryshim në bisedë për ta përditësuar menjëherë.</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>`;
+            return { html, reply: 'E ndërtova strukturën e aplikacionit tënd! Shikoje në dritaren djathtas.' };
+        }
+
+        function formatText(txt) {
+            return escapeHtml(txt).replace(/\n/g, '<br>');
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(state.currentHtml);
+            alert('Kodi HTML u kopjua!');
+        }
+
+        function downloadApp() {
+            const blob = new Blob([state.currentHtml], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'sabi_app.html';
+            a.click();
+        }
+
+        function clearChat() {
+            document.getElementById('chatBox').innerHTML = '';
+            appendMsg('ai', 'Biseda u pastrua. Çfarë dëshiron të krijojmë tani?');
+        }
+
+        // Modals & Admin
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function saveApiSettings() {
+            state.provider = document.getElementById('apiProvider').value;
+            state.apiKey = document.getElementById('apiKeyInput').value.trim();
+            localStorage.setItem('sabi_provider', state.provider);
+            localStorage.setItem('sabi_apikey', state.apiKey);
+            closeModal('apiModal');
+            appendMsg('ai', 'Cilësimet e API u ruajtën me sukses!');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value.trim();
+
+            if (email === 'admin@sabi' && pass === 'sabi007') {
+                state.user = { email: 'admin@sabi' };
+                localStorage.setItem('sabi_user', JSON.stringify(state.user));
+                closeModal('authModal');
+                updateUI();
+                appendMsg('ai', 'Mirë se erdhe <b>Admin Sabi</b>! Tani ke kredite pa limit (∞) dhe akses në Admin Panel.');
+                return;
+            }
+
+            const client = state.clients.find(c => c.email === email && c.pass === pass);
+            if (client) {
+                state.user = { email: client.email };
+                state.credits = client.credits;
+                localStorage.setItem('sabi_user', JSON.stringify(state.user));
+                localStorage.setItem('sabi_credits', state.credits);
+                closeModal('authModal');
+                updateUI();
+            } else {
+                alert('Të dhënat nuk janë të sakta!');
+            }
+        }
+
+        function logoutUser() {
+            state.user = null;
+            localStorage.removeItem('sabi_user');
+            closeModal('authModal');
+            updateUI();
+        }
+
+        function addClient() {
+            const email = document.getElementById('newClientEmail').value.trim();
+            const pass = document.getElementById('newClientPass').value.trim();
+            if (!email || !pass) return;
+            state.clients.push({ email, pass, credits: 20 });
+            localStorage.setItem('sabi_clients', JSON.stringify(state.clients));
+            document.getElementById('newClientEmail').value = '';
+            document.getElementById('newClientPass').value = '';
+            renderClients();
+        }
+
+        function giveCredits(idx, amount) {
+            state.clients[idx].credits += amount;
+            localStorage.setItem('sabi_clients', JSON.stringify(state.clients));
+            renderClients();
+        }
+
+        function renderClients() {
+            const list = document.getElementById('clientList');
+            if (!list) return;
+            list.innerHTML = state.clients.map((c, i) => `
+                <div class="flex items-center justify-between bg-slate-950 p-2.5 rounded-lg border border-slate-800 text-xs">
+                    <div>
+                        <div class="font-bold text-slate-200">${escapeHtml(c.email)}</div>
+                        <div class="text-slate-400">Kredite: <span class="text-emerald-400 font-bold">${c.credits}</span></div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="giveCredits(${i}, 20)" class="bg-indigo-600 hover:bg-indigo-500 px-2 py-1 rounded text-white font-semibold">+20</button>
+                        <button onclick="giveCredits(${i}, 100)" class="bg-emerald-600 hover:bg-emerald-500 px-2 py-1 rounded text-white font-semibold">+100</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        init();
+    </script>
+</body>
+</html>
