@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sabi Paneli & Cilësimet (Settings)</title>
+    <style>
+        :root {
+            --bg-main: #090d16;
+            --bg-card: #111827;
+            --bg-hover: #1f2937;
+            --border: #1e293b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-hover: #e2e8f0;
+            --border: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 32px;
+            padding: 0 12px;
+        }
+
+        .brand-badge {
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 500;
+            margin-bottom: 6px;
+            transition: 0.2s;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--bg-hover);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            border-left: 3px solid var(--accent);
+        }
+
+        /* Main Area */
+        .main-content {
+            flex: 1;
+            padding: 28px 36px;
+            overflow-y: auto;
+        }
+
+        /* Top Bar with Clock & Date */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 18px 24px;
+            border-radius: 16px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .clock-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .live-time {
+            font-size: 28px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: var(--accent);
+        }
+
+        .live-date {
+            font-size: 14px;
+            color: var(--text-muted);
+            text-transform: capitalize;
+        }
+
+        .status-pills {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .pill {
+            background-color: var(--bg-hover);
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot-online {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success);
+        }
+
+        /* Grid Cards */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .card-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        /* Form Elements */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .setting-label {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .setting-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        input[type="text"], select, textarea {
+            background-color: var(--bg-main);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            border-color: var(--accent);
+        }
+
+        /* Toggle Switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--bg-hover);
+            transition: .3s;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .section-panel {
+            display: none;
+        }
+
+        .section-panel.active {
+            display: block;
+        }
+
+        /* Notes & Tasks */
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-main);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background-color: var(--success);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 12px; }
+            .brand { margin-bottom: 0; }
+            .main-content { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <span>Sabi</span>
+                <span class="brand-badge">OS</span>
+            </div>
+            <button class="nav-item active" onclick="switchTab('settings', this)">⚙️ Cilësimet (Settings)</button>
+            <button class="nav-item" onclick="switchTab('workspace', this)">📝 Shënime & Detyra</button>
+            <button class="nav-item" onclick="switchTab('system', this)">📊 Statusi & Pajisja</button>
+        </div>
+        <div>
+            <a href="index.html" class="nav-item" style="text-decoration:none; color: var(--accent);">← Kthehu te Sabi AI</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <!-- Top Bar me Orën dhe Datën Reale -->
+        <div class="topbar">
+            <div class="clock-box">
+                <div>
+                    <div class="live-time" id="clockTime">00:00:00</div>
+                    <div class="live-date" id="clockDate">Duke ngarkuar datën...</div>
+                </div>
+            </div>
+            <div class="status-pills">
+                <div class="pill"><span class="dot-online"></span> Sistemi Aktiv</div>
+                <div class="pill" id="batteryStatus">🔋 Bateri: --%</div>
+                <div class="pill" id="userGreeting">👤 Përdoruesi: Sabi</div>
+            </div>
+        </div>
+
+        <!-- TAB 1: SETTINGS -->
+        <div id="tab-settings" class="section-panel active">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Cilësimet e Përgjithshme (Settings)</div>
+                    <div class="card-sub">Personalizo pamjen, gjuhën dhe profilin e aplikacionit Sabi.</div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Emri i Profilit / Kompanisë</div>
+                            <div class="setting-desc">Shfaqet në krye të panelit të aplikacionit</div>
+                        </div>
+                        <input type="text" id="profileNameInput" value="Sabi" placeholder="Shkruaj emrin...">
+                    </div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Tema e Dritës (Light Mode)</div>
+                            <div class="setting-desc">Ndrysho mes pamjes së errët dhe të ndritshme</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Formati i Orës 24-Orëshe</div>
+                            <div class="setting-desc">Përdor formatin 14:30 në vend të 2:30 PM</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="hour24Toggle" checked onchange="updateClock()">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Gjuha e Ndërfaqes</div>
+                            <div class="setting-desc">Zgjidh gjuhën kryesore të sistemit</div>
+                        </div>
+                        <select id="langSelect">
+                            <option value="sq-AL">Shqip (AL)</option>
+                            <option value="en-US">English (US)</option>
+                            <option value="de-DE">Deutsch (DE)</option>
+                            <option value="it-IT">Italiano (IT)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button class="btn" onclick="saveSettings()">Ruaj Cilësimet</button>
+                        <button class="btn btn-outline" onclick="resetSettings()">Rikthe Parazgjedhjet</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Siguria & Njoftimet</div>
+                    <div class="card-sub">Kontrollo ruajtjen automatike dhe njoftimet e sistemit.</div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Ruajtja Automatike (Auto-Save)</div>
+                            <div class="setting-desc">Ruan të gjitha ndryshimet në shfletues</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="autoSaveToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Efektet Zanore</div>
+                            <div class="setting-desc">Tingull konfirmimi kur kryhet një veprim</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <div>
+                            <div class="setting-label">Zona Kohore (Timezone)</div>
+                            <div class="setting-desc">Sinkronizuar me pajisjen tuaj</div>
+                        </div>
+                        <span style="font-size: 13px; color: var(--accent); font-weight: 600;" id="timezoneDisplay">Europe/Tirane</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SHËNIME & DETYRA -->
+        <div id="tab-workspace" class="section-panel">
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-title">Blloku i Shënimeve të Shpejta</div>
+                    <div class="card-sub">Shënimet ruhen automatikisht në memorien e aplikacionit.</div>
+                    <textarea id="quickNotes" rows="8" style="width: 100%; resize: vertical;" placeholder="Shkruaj idetë, çelësat ose shënimet e tua këtu..."></textarea>
+                    <div style="margin-top: 12px;">
+                        <button class="btn" onclick="saveNotes()">Ruaj Shënimet</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Lista e Detyrave (To-Do)</div>
+                    <div class="card-sub">Menaxho punët ditore për projektet e tua.</div>
+                    <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                        <input type="text" id="newTaskInput" style="flex: 1;" placeholder="Shto një detyrë të re...">
+                        <button class="btn" onclick="addTask()">Shto</button>
+                    </div>
+                    <div id="taskList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: STATUSI & PAJISJA -->
+        <div id="tab-system" class="section-panel">
+            <div class="card">
+                <div class="card-title">Informacioni i Pajisjes dhe Lidhjes</div>
+                <div class="card-sub">Të dhëna teknike në kohë reale nga shfletuesi juaj.</div>
+                <div class="setting-row">
+                    <span class="setting-label">Statusi i Internetit</span>
+                    <span id="netStatus" style="color: var(--success); font-weight: 700;">Online (I lidhur)</span>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">Platforma / Sistemi Operativ</span>
+                    <span id="osInfo">--</span>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">Rezolucioni i Ekranit</span>
+                    <span id="screenRes">--</span>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label">Memoria e Ruajtur (Local Storage)</span>
+                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px;" onclick="clearAllStorage()">Pastro Memorien</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="toast" id="toastMsg">Cilësimet u ruajtën me sukses!</div>
+
+    <script>
+        // Ora dhe Data në Kohë Reale
+        function updateClock() {
+            const now = new Date();
+            const is24 = document.getElementById('hour24Toggle').checked;
+            const lang = document.getElementById('langSelect').value || 'sq-AL';
+
+            const timeStr = now.toLocaleTimeString(lang, {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: !is24
+            });
+
+            const dateStr = now.toLocaleDateString(lang, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            document.getElementById('clockTime').innerText = timeStr;
+            document.getElementById('clockDate').innerText = dateStr;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Ndërrimi i Tab-eve
+        function switchTab(tabName, btn) {
+            document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // Tema Light / Dark
+        function toggleTheme() {
+            const isLight = document.getElementById('themeToggle').checked;
+            if (isLight) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+        }
+
+        // Ruajtja e Cilësimeve
+        function saveSettings() {
+            const name = document.getElementById('profileNameInput').value || 'Sabi';
+            const isLight = document.getElementById('themeToggle').checked;
+            const is24 = document.getElementById('hour24Toggle').checked;
+            const lang = document.getElementById('langSelect').value;
+
+            const settings = { name, isLight, is24, lang };
+            localStorage.setItem('sabi_settings', JSON.stringify(settings));
+            document.getElementById('userGreeting').innerText = '👤 Përdoruesi: ' + name;
+            updateClock();
+            showToast('Cilësimet u ruajtën me sukses!');
+        }
+
+        function loadSettings() {
+            const saved = JSON.parse(localStorage.getItem('sabi_settings'));
+            if (saved) {
+                document.getElementById('profileNameInput').value = saved.name;
+                document.getElementById('userGreeting').innerText = '👤 Përdoruesi: ' + saved.name;
+                document.getElementById('themeToggle').checked = saved.isLight;
+                document.getElementById('hour24Toggle').checked = saved.is24;
+                document.getElementById('langSelect').value = saved.lang;
+                toggleTheme();
+                updateClock();
+            }
+            document.getElementById('quickNotes').value = localStorage.getItem('sabi_notes') || '';
+            renderTasks();
+        }
+
+        function resetSettings() {
+            localStorage.removeItem('sabi_settings');
+            document.getElementById('profileNameInput').value = 'Sabi';
+            document.getElementById('themeToggle').checked = false;
+            document.getElementById('hour24Toggle').checked = true;
+            document.getElementById('langSelect').value = 'sq-AL';
+            toggleTheme();
+            saveSettings();
+        }
+
+        // Shënimet dhe Detyrat
+        function saveNotes() {
+            const text = document.getElementById('quickNotes').value;
+            localStorage.setItem('sabi_notes', text);
+            showToast('Shënimet u ruajtën!');
+        }
+
+        let tasks = JSON.parse(localStorage.getItem('sabi_tasks')) || [
+            { text: 'Konfiguro çelësin API te Sabi AI', done: false },
+            { text: 'Kontrollo kredite e klientëve', done: true }
+        ];
+
+        function renderTasks() {
+            const list = document.getElementById('taskList');
+            list.innerHTML = '';
+            tasks.forEach((t, idx) => {
+                const div = document.createElement('div');
+                div.className = 'task-item';
+                div.innerHTML = `
+                    <span style="text-decoration: ${t.done ? 'line-through' : 'none'}; opacity: ${t.done ? '0.6' : '1'}; cursor:pointer;" onclick="toggleTask(${idx})">
+                        ${t.done ? '✅' : '⬜'} ${t.text}
+                    </span>
+                    <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="deleteTask(${idx})">✕</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function addTask() {
+            const input = document.getElementById('newTaskInput');
+            if (!input.value.trim()) return;
+            tasks.push({ text: input.value.trim(), done: false });
+            input.value = '';
+            localStorage.setItem('sabi_tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function toggleTask(idx) {
+            tasks[idx].done = !tasks[idx].done;
+            localStorage.setItem('sabi_tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function deleteTask(idx) {
+            tasks.splice(idx, 1);
+            localStorage.setItem('sabi_tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        // Info e Pajisjes & Bateria
+        document.getElementById('timezoneDisplay').innerText = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        document.getElementById('osInfo').innerText = navigator.platform || 'Web Browser';
+        document.getElementById('screenRes').innerText = `${window.screen.width} x ${window.screen.height} px`;
+
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(bat => {
+                const updateBat = () => {
+                    document.getElementById('batteryStatus').innerText = `🔋 Bateri: ${Math.round(bat.level * 100)}%`;
+                };
+                updateBat();
+                bat.addEventListener('levelchange', updateBat);
+            });
+        }
+
+        window.addEventListener('online', () => document.getElementById('netStatus').innerText = 'Online (I lidhur)');
+        window.addEventListener('offline', () => document.getElementById('netStatus').innerText = 'Offline (Pa internet)');
+
+        function clearAllStorage() {
+            localStorage.clear();
+            showToast('Memoria u pastrua!');
+            setTimeout(() => location.reload(), 800);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastMsg');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        loadSettings();
+    </script>
+</body>
+</html>
