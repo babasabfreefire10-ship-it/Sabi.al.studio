@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sabi AI — Ndërto Webfaqe & Aplikacione VIP</title>
+<style>
+  :root {
+    --bg: #09090b;
+    --panel: #121216;
+    --panel-alt: #18181f;
+    --border: #272732;
+    --text: #fafafa;
+    --muted: #a1a1aa;
+    --primary: #6366f1;
+    --primary-hover: #4f46e5;
+    --accent: #a855f7;
+    --emerald: #10b981;
+    --amber: #f59e0b;
+    --danger: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { background: var(--bg); color: var(--text); line-height: 1.5; overflow-x: hidden; }
+  button { cursor: pointer; border: none; outline: none; font-family: inherit; transition: all 0.18s ease; }
+  input, textarea { font-family: inherit; outline: none; }
+
+  /* NAVBAR */
+  .navbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(9, 9, 11, 0.88); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px; height: 64px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px; }
+  .brand-logo {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 900;
+  }
+  .vip-tag {
+    font-size: 11px; padding: 2px 8px; border-radius: 99px;
+    background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  .nav-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .badge-credits {
+    background: var(--panel-alt); border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 99px; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--emerald); }
+  .btn-admin {
+    background: rgba(245, 158, 11, 0.15); color: var(--amber);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  }
+  .btn-admin:hover { background: rgba(245, 158, 11, 0.25); }
+  .btn-auth {
+    background: #fff; color: #09090b; padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  }
+  .btn-auth:hover { background: #e4e4e7; }
+
+  /* HERO */
+  .container { max-width: 1320px; margin: 0 auto; padding: 32px 20px; }
+  .hero { text-align: center; max-width: 720px; margin: 0 auto 28px; }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 48px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 10px;
+    background: linear-gradient(135deg, #fff 30%, #a5b4fc 70%, #e879f9 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero p { color: var(--muted); font-size: 15px; }
+
+  /* TEMPLATES */
+  .templates { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 24px; }
+  .tpl-btn {
+    background: var(--panel-alt); color: var(--text); border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: 99px; font-size: 13px; font-weight: 500;
+  }
+  .tpl-btn:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.12); }
+
+  /* WORKSPACE GRID */
+  .workspace { display: grid; grid-template-columns: 420px 1fr; gap: 20px; align-items: stretch; }
+  @media (max-width: 960px) { .workspace { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    display: flex; flex-direction: column; height: 610px; overflow: hidden;
+  }
+  .card-header {
+    padding: 12px 16px; background: var(--panel-alt); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .card-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+  /* CHAT AREA */
+  .chat-box { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+  .msg { padding: 12px 14px; border-radius: 12px; font-size: 13.5px; max-width: 92%; }
+  .msg-ai { background: var(--panel-alt); border: 1px solid var(--border); align-self: flex-start; color: #e4e4e7; }
+  .msg-user { background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.4); align-self: flex-end; color: #fff; }
+  .msg-err { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); align-self: flex-start; color: #fca5a5; }
+  .msg-label { font-size: 10px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; opacity: 0.75; }
+
+  .chat-input-area { padding: 12px; border-top: 1px solid var(--border); background: #0d0d11; }
+  .input-wrap { display: flex; gap: 8px; }
+  .input-wrap textarea {
+    flex: 1; background: var(--panel-alt); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; color: #fff; font-size: 13.5px; resize: none; height: 54px;
+  }
+  .input-wrap textarea:focus { border-color: var(--primary); }
+  .btn-send {
+    background: var(--primary); color: #fff; padding: 0 18px; border-radius: 10px;
+    font-weight: 700; font-size: 13px; white-space: nowrap;
+  }
+  .btn-send:hover { background: var(--primary-hover); }
+  .chat-meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  /* PREVIEW AREA */
+  .tab-group { display: flex; gap: 6px; }
+  .tab-btn { background: var(--panel); color: var(--muted); padding: 6px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); }
+  .tab-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .btn-dl { background: var(--emerald); color: #fff; padding: 6px 12px; border-radius: 7px; font-size: 12px; font-weight: 700; }
+  .btn-dl:hover { filter: brightness(1.1); }
+  .preview-body { flex: 1; position: relative; background: #fff; }
+  iframe { width: 100%; height: 100%; border: none; display: block; }
+  pre {
+    width: 100%; height: 100%; background: #09090b; color: #34d399; padding: 16px;
+    font-family: monospace; font-size: 12px; overflow: auto; white-space: pre-wrap;
+  }
+
+  /* MODALS */
+  .hidden { display: none !important; }
+  .modal-backdrop {
+    position: fixed; inset: 0; z-index: 100; background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-box {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+    width: 100%; max-width: 460px; padding: 24px; position: relative;
+  }
+  .modal-lg { max-width: 640px; }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px; background: var(--panel-alt);
+    color: var(--muted); width: 30px; height: 30px; border-radius: 8px; font-weight: 700;
+  }
+  .modal-close:hover { color: #fff; }
+  .modal-title { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+  .switch-tabs { display: flex; background: #09090b; padding: 4px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 18px; }
+  .switch-btn { flex: 1; padding: 8px; border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 700; }
+  .switch-btn.active { background: var(--primary); color: #fff; }
+  .switch-btn.active-amber { background: var(--amber); color: #09090b; }
+
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  .field input {
+    width: 100%; background: #09090b; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px; color: #fff; font-size: 14px;
+  }
+  .field input:focus { border-color: var(--primary); }
+  .btn-full { width: 100%; padding: 11px; border-radius: 10px; font-weight: 700; font-size: 14px; }
+
+  /* ADMIN TABLE */
+  .admin-add-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .admin-add-row input {
+    flex: 1; background: #09090b; border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 12px; color: #fff; font-size: 13px;
+  }
+  .client-list { max-height: 300px; overflow-y: auto; border: 1px solid var(--border); border-radius: 12px; }
+  .client-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 12px 14px;
+    border-bottom: 1px solid var(--border); gap: 10px; flex-wrap: wrap;
+  }
+  .client-row:last-child { border-bottom: none; }
+  .credit-btns { display: flex; gap: 6px; }
+  .btn-chip { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+  .chip-20 { background: rgba(16, 185, 129, 0.15); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.3); }
+  .chip-50 { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+  .chip-100 { background: rgba(245, 158, 11, 0.15); color: var(--amber); border: 1px solid rgba(245, 158, 11, 0.3); }
+  .btn-chip:hover { filter: brightness(1.25); }
+</style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-logo">S</div>
+      <span>Sabi<span style="color:#818cf8">.ai</span></span>
+      <span class="vip-tag">VIP LIVE</span>
+    </div>
+
+    <div class="nav-actions">
+      <div class="badge-credits">
+        <span class="dot"></span>
+        <span id="uiUser">Vizitor</span>:
+        <strong id="uiCredits" style="color:#818cf8">5 Kredite</strong>
+      </div>
+      <button type="button" id="btnAdminPanel" class="btn-admin hidden">Admin Panel</button>
+      <button type="button" id="btnLoginOpen" class="btn-auth">Hyr / Admin</button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="container">
+    <div class="hero">
+      <h1>Çfarë do të ndërtosh sot?</h1>
+      <p>Përshkruaj idenë tënde në një fjali. Sabi AI gjeneron webfaqen e plotë dhe funksionale menjëherë.</p>
+    </div>
+
+    <!-- QUICK TEMPLATES -->
+    <div class="templates">
+      <button type="button" class="tpl-btn" data-prompt="Krijo një webfaqe moderne për një restorant italian me menu, çmime dhe formular rezervimi">Sajt Restoranti</button>
+      <button type="button" class="tpl-btn" data-prompt="Ndërto një dyqan online luksoz për shitjen e orëve dhe telefonave me çmime">Dyqan Online</button>
+      <button type="button" class="tpl-btn" data-prompt="Krijo një klinikë dentare moderne me shërbimet dhe caktimin e takimeve">Klinikë Dentare</button>
+      <button type="button" class="tpl-btn" data-prompt="Ndërto një portofol VIP për një dizajner dhe zhvillues aplikacionesh">Portofol Kreativ</button>
+    </div>
+
+    <!-- WORKSPACE -->
+    <div class="workspace">
+      <!-- LEFT: AI CHAT -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title"><span class="dot"></span> Sabi AI Studio</div>
+          <button type="button" id="btnClear" class="tab-btn">Pastro</button>
+        </div>
+
+        <div id="chatBox" class="chat-box">
+          <div class="msg msg-ai">
+            <div class="msg-label">Sabi AI</div>
+            Përshëndetje! Shkruaj çfarë webfaqeje dëshiron të krijosh (p.sh. <em>"Nje dyqan makinash me cmime"</em>) dhe shtyp <strong>Ndërto</strong>.
+          </div>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="input-wrap">
+            <textarea id="promptInput" placeholder="Përshkruaj webfaqen tënde këtu..."></textarea>
+            <button type="button" id="btnBuild" class="btn-send">Ndërto</button>
+          </div>
+          <div class="chat-meta">
+            <span>Kostoja: 1 Kredit / gjenerim</span>
+            <span id="statusLabel" style="color:var(--emerald)">Gati</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: LIVE PREVIEW -->
+      <section class="card">
+        <div class="card-header">
+          <div class="card-title" style="font-family:monospace; font-size:12px; color:var(--muted);">https://sabi-app.live</div>
+          <div class="tab-group">
+            <button type="button" id="tabPreview" class="tab-btn active">Pamja Live</button>
+            <button type="button" id="tabCode" class="tab-btn">Kodi HTML</button>
+            <button type="button" id="btnDownload" class="btn-dl">Shkarko HTML</button>
+          </div>
+        </div>
+
+        <div class="preview-body">
+          <iframe id="previewFrame"></iframe>
+          <pre id="codeBlock" class="hidden"></pre>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- MODAL: LOGIN -->
+  <div id="modalLogin" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <button type="button" id="btnCloseLogin" class="modal-close">X</button>
+      <div class="modal-title">Hyr në Sabi AI</div>
+      <div class="modal-sub">Zgjidh hyrjen si klient ose si administrator.</div>
+
+      <div class="switch-tabs">
+        <button type="button" id="swClient" class="switch-btn active">Klient</button>
+        <button type="button" id="swAdmin" class="switch-btn">Administrator</button>
+      </div>
+
+      <!-- CLIENT LOGIN -->
+      <div id="formClient">
+        <div class="field">
+          <label>Emri i përdoruesit (p.sh. sabi)</label>
+          <input type="text" id="inClientName" placeholder="Shkruaj emrin tënd...">
+        </div>
+        <button type="button" id="btnDoClientLogin" class="btn-full" style="background:var(--primary); color:#fff;">Vazhdo si Klient</button>
+      </div>
+
+      <!-- ADMIN LOGIN -->
+      <div id="formAdmin" class="hidden">
+        <div class="field">
+          <label>Email-i i Adminit</label>
+          <input type="text" id="inAdminUser" placeholder="admin@sabi">
+        </div>
+        <div class="field">
+          <label>Fjalëkalimi</label>
+          <input type="password" id="inAdminPass" placeholder="••••••••">
+        </div>
+        <button type="button" id="btnDoAdminLogin" class="btn-full" style="background:var(--amber); color:#09090b;">Hyr si Administrator</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADMIN PANEL -->
+  <div id="modalAdmin" class="modal-backdrop hidden">
+    <div class="modal-box modal-lg">
+      <button type="button" id="btnCloseAdmin" class="modal-close">X</button>
+      <div class="modal-title">Paneli VIP i Administratorit</div>
+      <div class="modal-sub">Ju keni kredite <strong>Pa Limit</strong>. Shtoni klientë dhe dërgoni kredite me një klikim.</div>
+
+      <div class="admin-add-row">
+        <input type="text" id="inNewClient" placeholder="Emri i klientit të ri (p.sh. sabi)">
+        <button type="button" id="btnAddClient" class="btn-send" style="padding: 9px 16px;">+ Shto Klient</button>
+      </div>
+
+      <div id="clientList" class="client-list"></div>
+    </div>
+  </div>
+
+<script>
+(function() {
+  const STORAGE_USERS = "sabi_vip_db_users_v2";
+  const STORAGE_SESSION = "sabi_vip_db_session_v2";
+
+  let users = {};
+  try {
+    users = JSON.parse(localStorage.getItem(STORAGE_USERS)) || {
+      "sabi": { username: "sabi", credits: 5 }
+    };
+  } catch (e) {
+    users = { "sabi": { username: "sabi", credits: 5 } };
+  }
+
+  let session = { username: "Vizitor", credits: 5, isAdmin: false };
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_SESSION));
+    if (saved && saved.username) session = saved;
+  } catch (e) {}
+
+  let generatedCode = `<!DOCTYPE html>
+<html lang="sq">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Sabi AI</title>
+<style>body{margin:0;font-family:sans-serif;background:#09090b;color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px}.box{max-width:520px}.logo{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#a855f7);display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;margin:0 auto 20px}h1{font-size:32px;margin:0 0 10px}p{color:#a1a1aa;font-size:15px;line-height:1.6}</style>
+</head>
+<body><div class="box"><div class="logo">S</div><h1>Mirësevini në Sabi AI</h1><p>Shkruani idenë tuaj në anën e majtë ose klikoni një shabllon lart për të ndërtuar webfaqen tuaj menjëherë.</p></div></body>
+</html>`;
+
+  function syncState() {
+    if (!session.isAdmin && session.username !== "Vizitor" && users[session.username]) {
+      session.credits = users[session.username].credits;
+    }
+    try {
+      localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
+      localStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
+    } catch (e) {}
+    renderHeader();
+  }
+
+  function renderHeader() {
+    document.getElementById("uiUser").textContent = session.username;
+    const credEl = document.getElementById("uiCredits");
+    const adminBtn = document.getElementById("btnAdminPanel");
+    const loginBtn = document.getElementById("btnLoginOpen");
+
+    if (session.isAdmin) {
+      credEl.textContent = "Pa Limit";
+      credEl.style.color = "#f59e0b";
+      adminBtn.classList.remove("hidden");
+      loginBtn.textContent = "Dil (Admin)";
+    } else {
+      credEl.textContent = session.credits + " Kredite";
+      credEl.style.color = session.credits > 0 ? "#818cf8" : "#ef4444";
+      adminBtn.classList.add("hidden");
+      loginBtn.textContent = session.username === "Vizitor" ? "Hyr / Admin" : "Ndrysho Llogarinë";
+    }
+  }
+
+  function updatePreview() {
+    document.getElementById("previewFrame").srcdoc = generatedCode;
+    document.getElementById("codeBlock").textContent = generatedCode;
+  }
+
+  function addChat(type, html) {
+    const box = document.getElementById("chatBox");
+    const div = document.createElement("div");
+    if (type === "user") {
+      div.className = "msg msg-user";
+      div.innerHTML = '<div class="msg-label">Ti</div>' + html;
+    } else if (type === "err") {
+      div.className = "msg msg-err";
+      div.innerHTML = '<div class="msg-label">Kujdes</div>' + html;
+    } else {
+      div.className = "msg msg-ai";
+      div.innerHTML = '<div class="msg-label">Sabi AI</div>' + html;
+    }
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, function(m) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m];
+    });
+  }
+
+  function generateSiteCode(prompt) {
+    const cleanPrompt = escapeHtml(prompt);
+    const lower = prompt.toLowerCase();
+    let title = "Kompania Juaj VIP";
+    let accent = "#6366f1";
+    let badge = "Shërbim Profesional";
+    let cards = [
+      { name: "Paketa Bazë", price: "€49", desc: "Zgjidhje e shpejtë dhe e besueshme për biznesin tuaj." },
+      { name: "Paketa Pro", price: "€99", desc: "Përfshin funksione të avancuara dhe mbështetje 24/7." },
+      { name: "Paketa VIP", price: "€199", desc: "Gjithçka e përfshirë pa asnjë kufizim." }
+    ];
+
+    if (lower.includes("restorant") || lower.includes("ushqim") || lower.includes("pizza") || lower.includes("kafe")) {
+      title = "Trattoria & Restorant";
+      accent = "#f59e0b";
+      badge = "Kuzhinë e Freskët & Tradicionale";
+      cards = [
+        { name: "Pasta Tartuf", price: "€12.50", desc: "Pasta të punuara me dorë me krem tartufi të zi." },
+        { name: "Pizza Speciale", price: "€9.50", desc: "E pjekur në furrë druri me përbërës organikë." },
+        { name: "Biftek Viçi", price: "€22.00", desc: "Shërbehet me perime të pjekura dhe salcë shtëpie." }
+      ];
+    } else if (lower.includes("dyqan") || lower.includes("shop") || lower.includes("telefon") || lower.includes("ore") || lower.includes("makin")) {
+      title = "Sabi Luxury Store";
+      accent = "#10b981";
+      badge = "Koleksioni i Ri 2026";
+      cards = [
+        { name: "Modeli Ultra Pro", price: "€899", desc: "Cilësi e lartë me 2 vite garanci zyrtare." },
+        { name: "Edicioni Sport", price: "€349", desc: "Dizajn modern dhe performancë maksimale." },
+        { name: "Paketa Ekskluzive", price: "€1,290", desc: "E limituar me aksesorë të përfshirë." }
+      ];
+    } else if (lower.includes("klinik") || lower.includes("dentar") || lower.includes("mjek")) {
+      title = "Klinika Moderne";
+      accent = "#06b6d4";
+      badge = "Kujdes Mjekësor i Avancuar";
+      cards = [
+        { name: "Kontroll & Pastrim", price: "€30", desc: "Vizitë e plotë dhe pastrim profesional." },
+        { name: "Trajtim Estetik", price: "€120", desc: "Teknologji bashkëkohore pa dhimbje." },
+        { name: "Paketa e Plotë", price: "€450", desc: "Kujdes i dedikuar me garanci afatgjatë." }
+      ];
+    }
+
+    const cardsHtml = cards.map(c => `
+      <div class="card">
+        <div class="card-top"><h3>${c.name}</h3><span class="price">${c.price}</span></div>
+        <p>${c.desc}</p>
+        <button type="button" onclick="alert('Ju zgjodhët: ${c.name}')">Zgjidh Oferten</button>
+      </div>
+    `).join("");
+
+    return `<!DOCTYPE html>
+<html lang="sq">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>${title}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:sans-serif}
+  body{background:#09090b;color:#f8fafc;line-height:1.6}
+  header{background:#111116;border-bottom:1px solid #22222c;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+  .logo{font-weight:900;font-size:20px;color:${accent}}
+  .btn{background:${accent};color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;border:none;cursor:pointer}
+  .hero{text-align:center;padding:70px 20px;max-width:760px;margin:0 auto}
+  .badge{display:inline-block;padding:4px 12px;border-radius:99px;background:rgba(255,255,255,0.08);color:${accent};font-size:12px;font-weight:700;margin-bottom:14px}
+  h1{font-size:40px;margin-bottom:14px}
+  .hero p{color:#94a3b8;font-size:17px;margin-bottom:26px}
+  .grid{max-width:1040px;margin:0 auto;padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+  .card{background:#121218;border:1px solid #242430;border-radius:14px;padding:22px;display:flex;flex-direction:column;justify-content:space-between}
+  .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .price{color:${accent};font-weight:900;font-size:18px}
+  .card p{color:#94a3b8;font-size:14px;margin-bottom:18px}
+  .card button{width:100%;padding:10px;border-radius:8px;background:#1e1e28;color:#fff;border:1px solid #2e2e3d;font-weight:700;cursor:pointer}
+  .card button:hover{background:${accent};border-color:${accent}}
+  .contact{max-width:480px;margin:50px auto;background:#121218;border:1px solid #242430;border-radius:14px;padding:26px}
+  .contact h2{margin-bottom:14px;text-align:center}
+  .contact input{width:100%;padding:11px;margin-bottom:12px;border-radius:8px;border:1px solid #2a2a38;background:#09090b;color:#fff}
+  footer{text-align:center;padding:24px;color:#64748b;font-size:12px;border-top:1px solid #181820;margin-top:40px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">${title}</div>
+    <a href="#kontakt" class="btn">Na Kontakto</a>
+  </header>
+  <section class="hero">
+    <span class="badge">${badge}</span>
+    <h1>${title}</h1>
+    <p>${cleanPrompt}</p>
+    <a href="#oferta" class="btn">Shiko Katalogun</a>
+  </section>
+  <section id="oferta" class="grid">${cardsHtml}</section>
+  <section id="kontakt" class="contact">
+    <h2>Dërgo Kërkesë</h2>
+    <form onsubmit="event.preventDefault();alert('Kërkesa juaj u dërgua me sukses!');">
+      <input type="text" required placeholder="Emri juaj">
+      <input type="tel" required placeholder="Numri i telefonit">
+      <button type="submit" class="btn" style="width:100%">Konfirmo</button>
+    </form>
+  </section>
+  <footer>© 2026 ${title} — Ndërtuar me Sabi AI</footer>
+</body>
+</html>`;
+  }
+
+  // EVENTET E BUTONAVE
+  document.getElementById("btnBuild").addEventListener("click", function() {
+    const input = document.getElementById("promptInput");
+    const text = input.value.trim();
+    if (!text) return;
+
+    if (!session.isAdmin && session.credits <= 0) {
+      addChat("err", "Ju kanë mbaruar kreditet (0). Hyni me emrin tuaj te <strong>Hyr / Admin</strong> dhe kërkoni kredite nga administratori.");
+      document.getElementById("modalLogin").classList.remove("hidden");
+      return;
+    }
+
+    if (!session.isAdmin) {
+      session.credits -= 1;
+      if (session.username !== "Vizitor" && users[session.username]) {
+        users[session.username].credits = session.credits;
+      }
+      syncState();
+    }
+
+    addChat("user", escapeHtml(text));
+    input.value = "";
+    const status = document.getElementById("statusLabel");
+    status.textContent = "Duke ndërtuar...";
+    status.style.color = "#f59e0b";
+
+    setTimeout(function() {
+      generatedCode = generateSiteCode(text);
+      updatePreview();
+      addChat("ai", "Webfaqja u ndërtua me sukses! Mund ta shikoni djathtas ose ta shkarkoni si skedar HTML.");
+      status.textContent = "Gati";
+      status.style.color = "#10b981";
+    }, 350);
+  });
+
+  document.getElementById("promptInput").addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      document.getElementById("btnBuild").click();
+    }
+  });
+
+  document.querySelectorAll(".tpl-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      document.getElementById("promptInput").value = btn.getAttribute("data-prompt");
+      document.getElementById("btnBuild").click();
+    });
+  });
+
+  document.getElementById("btnClear").addEventListener("click", function() {
+    document.getElementById("chatBox").innerHTML = '<div class="msg msg-ai"><div class="msg-label">Sabi AI</div>Biseda u pastrua. Shkruaj çfarë dëshiron të ndërtosh!</div>';
+  });
+
+  document.getElementById("tabPreview").addEventListener("click", function() {
+    document.getElementById("previewFrame").classList.remove("hidden");
+    document.getElementById("codeBlock").classList.add("hidden");
+    document.getElementById("tabPreview").classList.add("active");
+    document.getElementById("tabCode").classList.remove("active");
+  });
+
+  document.getElementById("tabCode").addEventListener("click", function() {
+    document.getElementById("previewFrame").classList.add("hidden");
+    document.getElementById("codeBlock").classList.remove("hidden");
+    document.getElementById("tabCode").classList.add("active");
+    document.getElementById("tabPreview").classList.remove("active");
+  });
+
+  document.getElementById("btnDownload").addEventListener("click", function() {
+    const blob = new Blob([generatedCode], { type: "text/html;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "sabi_website.html";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  // LOGIN MODAL
+  document.getElementById("btnLoginOpen").addEventListener("click", function() {
+    if (session.isAdmin) {
+      session = { username: "Vizitor", credits: 5, isAdmin: false };
+      syncState();
+      return;
+    }
+    document.getElementById("modalLogin").classList.remove("hidden");
+  });
+
+  document.getElementById("btnCloseLogin").addEventListener("click", function() {
+    document.getElementById("modalLogin").classList.add("hidden");
+  });
+
+  document.getElementById("swClient").addEventListener("click", function() {
+    document.getElementById("formClient").classList.remove("hidden");
+    document.getElementById("formAdmin").classList.add("hidden");
+    document.getElementById("swClient").className = "switch-btn active";
+    document.getElementById("swAdmin").className = "switch-btn";
+  });
+
+  document.getElementById("swAdmin").addEventListener("click", function() {
+    document.getElementById("formAdmin").classList.remove("hidden");
+    document.getElementById("formClient").classList.add("hidden");
+    document.getElementById("swAdmin").className = "switch-btn active-amber";
+    document.getElementById("swClient").className = "switch-btn";
+  });
+
+  document.getElementById("btnDoClientLogin").addEventListener("click", function() {
+    const name = document.getElementById("inClientName").value.trim().toLowerCase();
+    if (!name) { alert("Shkruani emrin e përdoruesit!"); return; }
+    if (!users[name]) {
+      users[name] = { username: name, credits: 5 };
+    }
+    session = { username: name, credits: users[name].credits, isAdmin: false };
+    syncState();
+    document.getElementById("modalLogin").classList.add("hidden");
+  });
+
+  document.getElementById("btnDoAdminLogin").addEventListener("click", function() {
+    const u = document.getElementById("inAdminUser").value.trim();
+    const p = document.getElementById("inAdminPass").value.trim();
+    if (u === "admin@sabi" && p === "sabi007") {
+      session = { username: "Admin Sabi", credits: 999999, isAdmin: true };
+      syncState();
+      document.getElementById("modalLogin").classList.add("hidden");
+    } else {
+      alert("Email-i ose fjalëkalimi i administratorit është i gabuar!");
+    }
+  });
+
+  // ADMIN PANEL
+  function renderClients() {
+    const list = document.getElementById("clientList");
+    list.innerHTML = "";
+    Object.keys(users).forEach(function(key) {
+      const u = users[key];
+      const row = document.createElement("div");
+      row.className = "client-row";
+
+      const info = document.createElement("div");
+      info.innerHTML = '<strong>' + escapeHtml(u.username) + '</strong><div style="font-size:12px;color:' + (u.credits > 0 ? '#10b981' : '#ef4444') + '">Balanca: ' + u.credits + ' Kredite</div>';
+
+      const btns = document.createElement("div");
+      btns.className = "credit-btns";
+
+      [20, 50, 100].forEach(function(amt) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "btn-chip chip-" + amt;
+        b.textContent = "+" + amt;
+        b.addEventListener("click", function() {
+          users[key].credits += amt;
+          syncState();
+          renderClients();
+        });
+        btns.appendChild(b);
+      });
+
+      row.appendChild(info);
+      row.appendChild(btns);
+      list.appendChild(row);
+    });
+  }
+
+  document.getElementById("btnAdminPanel").addEventListener("click", function() {
+    renderClients();
+    document.getElementById("modalAdmin").classList.remove("hidden");
+  });
+
+  document.getElementById("btnCloseAdmin").addEventListener("click", function() {
+    document.getElementById("modalAdmin").classList.add("hidden");
+  });
+
+  document.getElementById("btnAddClient").addEventListener("click", function() {
+    const inp = document.getElementById("inNewClient");
+    const name = inp.value.trim().toLowerCase();
+    if (!name) return;
+    if (!users[name]) {
+      users[name] = { username: name, credits: 0 };
+      syncState();
+      renderClients();
+    }
+    inp.value = "";
+  });
+
+  // START
+  syncState();
+  updatePreview();
+})();
+</script>
+</body>
+</html>
