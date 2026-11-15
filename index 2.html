@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mjegulla AI Studio — Ndërtues Sajtesh & Aplikacionesh me AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lidhja automatike me skedarin config.js -->
+    <script src="config.js"></script>
+    <style>
+        body { background-color: #09090b; color: #f4f4f5; font-family: system-ui, -apple-system, sans-serif; }
+        .glass { background: rgba(24, 24, 27, 0.85); backdrop-filter: blur(12px); border: 1px solid #27272a; }
+        .gradient-text { background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <header class="glass sticky top-0 z-40 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center font-bold text-white text-lg">M</div>
+            <div>
+                <h1 class="font-bold text-lg tracking-tight text-white">Mjegulla <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">AI Studio Pro</span></h1>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3 flex-wrap">
+            <div id="statusBadge" class="text-xs px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400">
+                Modaliteti: <span id="modeLabel" class="text-amber-400 font-semibold">Demo (Lokal)</span>
+            </div>
+
+            <div id="creditBox" class="hidden text-xs px-3 py-1.5 rounded-lg bg-sky-950/50 border border-sky-800/50 text-sky-300 font-semibold">
+                Kredite: <span id="creditCount">20</span>
+            </div>
+
+            <button id="adminBtn" onclick="openAdminModal()" class="hidden text-xs bg-purple-600 hover:bg-purple-500 text-white font-semibold px-3.5 py-2 rounded-lg transition">
+                Admin Panel
+            </button>
+
+            <button id="authBtn" onclick="openAuthModal()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded-lg transition">
+                Hyr / Regjistrohu
+            </button>
+
+            <button id="logoutBtn" onclick="logout()" class="hidden text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 py-2 rounded-lg transition">
+                Dil
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 max-w-[1600px] w-full mx-auto">
+        
+        <!-- Left Panel: AI Prompt & Controls -->
+        <div class="lg:col-span-4 flex flex-col gap-4">
+            <div class="glass rounded-2xl p-5 flex flex-col gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-white">Çfarë do ndërtosh sot?</h2>
+                    <p class="text-xs text-zinc-400 mt-1">Përshkruaj sajtin ose aplikacionin dhe AI do ta ndërtojë menjëherë.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1.5">Modeli AI</label>
+                    <select id="modelSelect" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (I shpejtë)</option>
+                        <option value="gpt-4o">GPT-4o (OpenAI)</option>
+                        <option value="claude-3-7">Claude 3.7 Sonnet</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-zinc-400 mb-1.5">Përshkrimi i projektit</label>
+                    <textarea id="promptInput" rows="5" placeholder="P.sh. Ndërto një sajt modern për një restorant italian në Tiranë me menu, çmime dhe formular rezervimi..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="setTemplate('Ndërto një faqe moderne për një restorant piceri me menu interaktive dhe buton rezervimi në WhatsApp.')" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-lg transition">+ Restorant</button>
+                    <button onclick="setTemplate('Ndërto një dyqan online modern për shitjen e orëve luksoze me shportë blerjesh dhe çmime në Euro.')" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-lg transition">+ Dyqan Online</button>
+                    <button onclick="setTemplate('Ndërto një sistem rezervimesh për klinikë dentare me zgjedhje ore, date dhe shërbimi.')" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-2.5 py-1.5 rounded-lg transition">+ Klinikë</button>
+                </div>
+
+                <button id="generateBtn" onclick="generateApp()" class="w-full bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold py-3 rounded-xl shadow-lg shadow-indigo-500/20 transition">
+                    Gjenero Aplikacionin (1 Kredit)
+                </button>
+
+                <div id="statusLog" class="text-xs text-zinc-400 bg-zinc-950/80 border border-zinc-800/80 rounded-xl p-3 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Live Preview & Download -->
+        <div class="lg:col-span-8 flex flex-col glass rounded-2xl overflow-hidden min-h-[600px]">
+            <div class="bg-zinc-900/90 border-b border-zinc-800 px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                    <span class="text-xs text-zinc-400 ml-2 font-mono">pamja-paraprake.mjegulla.app</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleCodeView()" id="codeToggleBtn" class="text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3 py-1.5 rounded-lg transition">Shiko Kodin</button>
+                    <button onclick="downloadGeneratedHTML()" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-3 py-1.5 rounded-lg transition">Shkarko .HTML</button>
+                </div>
+            </div>
+
+            <div class="flex-1 relative bg-white">
+                <iframe id="previewFrame" class="w-full h-full min-h-[550px] border-0"></iframe>
+                <textarea id="codeView" readonly class="hidden w-full h-full min-h-[550px] bg-zinc-950 text-emerald-400 font-mono text-xs p-4 focus:outline-none"></textarea>
+            </div>
+        </div>
+    </main>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-2xl max-w-sm w-full p-6">
+            <h3 class="text-lg font-bold text-white mb-1">Hyr në Mjegulla AI</h3>
+            <p class="text-xs text-zinc-400 mb-4">Hyni si administrator ose regjistrohuni si klient i ri.</p>
+            <input id="emailInput" type="email" placeholder="Email (p.sh. admin@sabi)" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white mb-3">
+            <input id="passInput" type="password" placeholder="Fjalëkalimi" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3.5 py-2.5 text-sm text-white mb-4">
+            <div class="flex gap-2">
+                <button onclick="handleAuth()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm">Vazhdo</button>
+                <button onclick="closeAuthModal()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2.5 rounded-xl text-sm">Mbyll</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div id="adminModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div class="glass rounded-2xl max-w-2xl w-full p-6 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-white">Paneli i Administratorit (Kredite Pa Limit ∞)</h3>
+                    <p class="text-xs text-zinc-400">Krijo klientë të rinj dhe shpërndaj kredite.</p>
+                </div>
+                <button onclick="closeAdminModal()" class="text-zinc-400 hover:text-white text-sm bg-zinc-800 px-3 py-1.5 rounded-lg">Mbyll</button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6 bg-zinc-900/80 p-3 rounded-xl border border-zinc-800">
+                <input id="newClientEmail" type="email" placeholder="Email i klientit" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white">
+                <input id="newClientPass" type="text" placeholder="Fjalëkalimi" class="bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white">
+                <button onclick="createClient()" class="bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-lg px-3 py-2 text-xs">+ Shto Klient (20 Kredite)</button>
+            </div>
+
+            <div id="clientList" class="flex flex-col gap-2"></div>
+        </div>
+    </div>
+
+    <script>
+        const CFG = window.MJEGULLA_CONFIG || {
+            AI_PROVIDER: "gemini",
+            AI_API_KEY: "",
+            SUPABASE_URL: "",
+            SUPABASE_ANON_KEY: "",
+            ADMIN_EMAIL: "admin@sabi",
+            ADMIN_PASS: "sabi007",
+            DEFAULT_FREE_CREDITS: 20
+        };
+
+        let currentUser = JSON.parse(localStorage.getItem('mjegulla_user')) || null;
+        let usersDB = JSON.parse(localStorage.getItem('mjegulla_users_db')) || {};
+        let generatedCode = "";
+        let showingCode = false;
+
+        // Inicializimi i gjendjes së lidhjes nga config.js
+        window.addEventListener('DOMContentLoaded', async () => {
+            const hasAI = CFG.AI_API_KEY && CFG.AI_API_KEY.trim().length > 5;
+            const hasCloud = CFG.SUPABASE_URL && CFG.SUPABASE_ANON_KEY;
+            const modeEl = document.getElementById('modeLabel');
+
+            if (hasAI && hasCloud) {
+                modeEl.innerText = "LIVE (AI API + Supabase Cloud)";
+                modeEl.className = "text-emerald-400 font-semibold";
+            } else if (hasAI) {
+                modeEl.innerText = "AI API Aktive (Ruajtje Lokale)";
+                modeEl.className = "text-sky-400 font-semibold";
+            } else if (hasCloud) {
+                modeEl.innerText = "Supabase Cloud (Demo AI)";
+                modeEl.className = "text-indigo-400 font-semibold";
+            }
+
+            if (hasCloud) {
+                await syncUsersFromSupabase();
+            }
+
+            updateUI();
+            loadWelcomePreview();
+        });
+
+        async function supabaseFetch(path, options = {}) {
+            if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) return null;
+            const res = await fetch(`${CFG.SUPABASE_URL}/rest/v1/${path}`, {
+                ...options,
+                headers: {
+                    'apikey': CFG.SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${CFG.SUPABASE_ANON_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation',
+                    ...(options.headers || {})
+                }
+            });
+            return res.ok ? await res.json() : null;
+        }
+
+        async function syncUsersFromSupabase() {
+            const data = await supabaseFetch('mjegulla_users?select=*');
+            if (data && Array.isArray(data)) {
+                usersDB = {};
+                data.forEach(u => {
+                    usersDB[u.email] = { password: u.password, credits: u.credits, isAdmin: u.is_admin };
+                });
+                localStorage.setItem('mjegulla_users_db', JSON.stringify(usersDB));
+            }
+        }
+
+        function updateUI() {
+            const authBtn = document.getElementById('authBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const creditBox = document.getElementById('creditBox');
+            const creditCount = document.getElementById('creditCount');
+            const adminBtn = document.getElementById('adminBtn');
+
+            if (currentUser) {
+                authBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                creditBox.classList.remove('hidden');
+                if (currentUser.isAdmin) {
+                    creditCount.innerText = "∞ (Admin)";
+                    adminBtn.classList.remove('hidden');
+                } else {
+                    const latestCredits = usersDB[currentUser.email]?.credits ?? currentUser.credits;
+                    currentUser.credits = latestCredits;
+                    creditCount.innerText = latestCredits;
+                    adminBtn.classList.add('hidden');
+                }
+            } else {
+                authBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                creditBox.classList.add('hidden');
+                adminBtn.classList.add('hidden');
+            }
+        }
+
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+
+        async function handleAuth() {
+            const email = document.getElementById('emailInput').value.trim().toLowerCase();
+            const pass = document.getElementById('passInput').value.trim();
+            if (!email || !pass) return alert("Plotësoni email-in dhe fjalëkalimin!");
+
+            if (email === CFG.ADMIN_EMAIL.toLowerCase() && pass === CFG.ADMIN_PASS) {
+                currentUser = { email, isAdmin: true, credits: 999999 };
+            } else {
+                if (CFG.SUPABASE_URL) await syncUsersFromSupabase();
+                if (usersDB[email]) {
+                    if (usersDB[email].password !== pass) return alert("Fjalëkalim i gabuar!");
+                    currentUser = { email, isAdmin: false, credits: usersDB[email].credits };
+                } else {
+                    usersDB[email] = { password: pass, credits: CFG.DEFAULT_FREE_CREDITS, isAdmin: false };
+                    localStorage.setItem('mjegulla_users_db', JSON.stringify(usersDB));
+                    if (CFG.SUPABASE_URL) {
+                        await supabaseFetch('mjegulla_users', {
+                            method: 'POST',
+                            body: JSON.stringify({ email, password: pass, credits: CFG.DEFAULT_FREE_CREDITS, is_admin: false })
+                        });
+                    }
+                    currentUser = { email, isAdmin: false, credits: CFG.DEFAULT_FREE_CREDITS };
+                }
+            }
+            localStorage.setItem('mjegulla_user', JSON.stringify(currentUser));
+            closeAuthModal();
+            updateUI();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('mjegulla_user');
+            updateUI();
+        }
+
+        async function openAdminModal() {
+            if (CFG.SUPABASE_URL) await syncUsersFromSupabase();
+            renderClientList();
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
+
+        async function createClient() {
+            const email = document.getElementById('newClientEmail').value.trim().toLowerCase();
+            const pass = document.getElementById('newClientPass').value.trim();
+            if (!email || !pass) return alert("Shkruani email-in dhe fjalëkalimin!");
+
+            usersDB[email] = { password: pass, credits: 20, isAdmin: false };
+            localStorage.setItem('mjegulla_users_db', JSON.stringify(usersDB));
+
+            if (CFG.SUPABASE_URL) {
+                await supabaseFetch('mjegulla_users', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password: pass, credits: 20, is_admin: false })
+                });
+            }
+
+            document.getElementById('newClientEmail').value = "";
+            document.getElementById('newClientPass').value = "";
+            renderClientList();
+        }
+
+        async function modifyCredits(email, amount) {
+            if (!usersDB[email]) return;
+            usersDB[email].credits = Math.max(0, (usersDB[email].credits || 0) + amount);
+            localStorage.setItem('mjegulla_users_db', JSON.stringify(usersDB));
+
+            if (CFG.SUPABASE_URL) {
+                await supabaseFetch(`mjegulla_users?email=eq.${encodeURIComponent(email)}`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ credits: usersDB[email].credits })
+                });
+            }
+            renderClientList();
+        }
+
+        function renderClientList() {
+            const list = document.getElementById('clientList');
+            const keys = Object.keys(usersDB);
+            if (keys.length === 0) {
+                list.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">Nuk ka klientë të regjistruar ende.</p>`;
+                return;
+            }
+            list.innerHTML = keys.map(email => `
+                <div class="flex flex-wrap justify-between items-center bg-zinc-900 border border-zinc-800 rounded-xl p-3 gap-2">
+                    <div>
+                        <div class="text-sm font-semibold text-white">${email}</div>
+                        <div class="text-xs text-zinc-400">Fjalëkalimi: <span class="text-zinc-300">${usersDB[email].password}</span> | Kredite: <span class="text-sky-400 font-bold">${usersDB[email].credits}</span></div>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button onclick="modifyCredits('${email}', 20)" class="text-xs bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg hover:bg-emerald-600/30">+20</button>
+                        <button onclick="modifyCredits('${email}', 100)" class="text-xs bg-sky-600/20 text-sky-400 border border-sky-500/30 px-2.5 py-1 rounded-lg hover:bg-sky-600/30">+100</button>
+                        <button onclick="modifyCredits('${email}', -10)" class="text-xs bg-rose-600/20 text-rose-400 border border-rose-500/30 px-2.5 py-1 rounded-lg hover:bg-rose-600/30">-10</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setTemplate(text) {
+            document.getElementById('promptInput').value = text;
+        }
+
+        async function generateApp() {
+            if (!currentUser) return openAuthModal();
+            const prompt = document.getElementById('promptInput').value.trim();
+            if (!prompt) return alert("Shkruani përshkrimin e aplikacionit!");
+
+            if (!currentUser.isAdmin) {
+                if (currentUser.credits <= 0) return alert("Nuk keni më kredite! Kontaktoni administratorin.");
+                await modifyCredits(currentUser.email, -1);
+                updateUI();
+            }
+
+            const btn = document.getElementById('generateBtn');
+            const log = document.getElementById('statusLog');
+            btn.disabled = true;
+            btn.innerText = "Duke ndërtuar aplikacionin...";
+            log.classList.remove('hidden');
+            log.innerText = "AI po analizon kërkesën dhe po shkruan kodin HTML/CSS/JS...";
+
+            try {
+                if (CFG.AI_API_KEY && CFG.AI_API_KEY.trim().length > 5) {
+                    generatedCode = await callRealAI(prompt);
+                } else {
+                    await new Promise(r => setTimeout(r, 1200));
+                    generatedCode = buildSmartDemoHTML(prompt);
+                }
+                showPreview(generatedCode);
+                log.innerText = "Aplikacioni u ndërtua me sukses! Mund ta testoni ose ta shkarkoni.";
+            } catch (err) {
+                log.innerText = "Gabim gjatë lidhjes me API: " + err.message;
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Gjenero Aplikacionin (1 Kredit)";
+            }
+        }
+
+        async function callRealAI(userPrompt) {
+            const systemInstruction = "Ti je një programues ekspert web. Kthe VETËM kod të plotë, modern dhe responsiv HTML5 me Tailwind CSS CDN (<script src='https://cdn.tailwindcss.com'></script>) në gjuhën shqipe. Mos shkruaj asnjë tekst shpjegues jashtë kodit HTML, as markdown ```html.";
+
+            if (CFG.AI_PROVIDER === "openai") {
+                const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${CFG.AI_API_KEY}` },
+                    body: JSON.stringify({
+                        model: "gpt-4o-mini",
+                        messages: [{ role: "system", content: systemInstruction }, { role: "user", content: userPrompt }]
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error?.message || "Gabim OpenAI");
+                return cleanMarkdown(data.choices[0].message.content);
+            } else {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${CFG.AI_API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: systemInstruction + "\n\nKërkesa e klientit: " + userPrompt }] }]
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error?.message || "Gabim Gemini");
+                return cleanMarkdown(data.candidates[0].content.parts[0].text);
+            }
+        }
+
+        function cleanMarkdown(text) {
+            return text.replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+        }
+
+        function buildSmartDemoHTML(prompt) {
+            return `<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikacioni Juaj — Mjegulla AI</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+</head>
+<body class="bg-slate-950 text-white font-sans">
+    <nav class="border-b border-slate-800 px-6 py-4 flex justify-between items-center max-w-6xl mx-auto">
+        <span class="font-bold text-xl text-sky-400">MjegullaApp</span>
+        <a href="#kontakt" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm">Fillo Tani</a>
+    </nav>
+    <section class="max-w-4xl mx-auto text-center py-20 px-6">
+        <span class="text-xs uppercase tracking-widest text-sky-400 bg-sky-500/10 px-3 py-1 rounded-full border border-sky-500/20">Ndërtuar nga Mjegulla AI</span>
+        <h1 class="text-4xl md:text-5xl font-extrabold mt-6 leading-tight">${prompt}</h1>
+        <p class="text-slate-400 mt-4 text-lg">Ky është versioni i gjeneruar automatikisht. Vendosni çelësin tuaj Gemini ose OpenAI në skedarin config.js për dizajn të personalizuar me AI reale.</p>
+        <div class="mt-8 flex justify-center gap-4">
+            <button onclick="alert('Veprimi u krye me sukses!')" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold px-6 py-3 rounded-xl">Eksploro Shërbimet</button>
+        </div>
+    </section>
+</body>
+</html>`;
+        }
+
+        function loadWelcomePreview() {
+            generatedCode = buildSmartDemoHTML("Mirë se vini në Mjegulla AI Studio");
+            showPreview(generatedCode);
+        }
+
+        function showPreview(html) {
+            const frame = document.getElementById('previewFrame');
+            frame.srcdoc = html;
+            document.getElementById('codeView').value = html;
+        }
+
+        function toggleCodeView() {
+            showingCode = !showingCode;
+            const frame = document.getElementById('previewFrame');
+            const code = document.getElementById('codeView');
+            const btn = document.getElementById('codeToggleBtn');
+            if (showingCode) {
+                frame.classList.add('hidden');
+                code.classList.remove('hidden');
+                btn.innerText = "Pamja Paraprake";
+            } else {
+                frame.classList.remove('hidden');
+                code.classList.add('hidden');
+                btn.innerText = "Shiko Kodin";
+            }
+        }
+
+        function downloadGeneratedHTML() {
+            if (!generatedCode) return;
+            const blob = new Blob([generatedCode], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'sajti_im_mjegulla.html';
+            a.click();
+        }
+    </script>
+</body>
+</html>
